@@ -4,10 +4,12 @@ import {
   BOD,
   Email,
   January,
-  WilliamEmail,
 } from "../../../../../../../utils/Constant";
+import { useUser } from "@/context/UserContext";
 
 const ProfileMail = () => {
+  const { user } = useUser();
+  
   return (
     <Col sm={6} xl={4} className="order-sm-1 order-xl-0">
       <Row className="g-3">
@@ -17,7 +19,7 @@ const ProfileMail = () => {
               <i className="fa fa-envelope" />
               &nbsp;&nbsp;&nbsp;{Email}
             </h6>
-            <span>{WilliamEmail}</span>
+            <span>{user?.email || 'Not logged in'}</span>
           </div>
         </Col>
         <Col md={6}>

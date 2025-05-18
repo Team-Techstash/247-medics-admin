@@ -15,14 +15,14 @@ export const withoutLayoutThemePath = [
   "/pages/authentication/login-tooltip",
   "/pages/authentication/login-sweetalert",
   "/pages/authentication/registerwizard",
-  "/pages/authentication/register-simple",
   "/pages/authentication/register-bg-img",
   "/pages/authentication/sign-up-two",
   "/pages/authentication/unlock-user",
   "/pages/authentication/forget-pwd",
   "/pages/authentication/create-pwd",
   "/pages/authentication/maintenance",
-  "/authentication/login"
+  "/authentication/login",
+  "/authentication/register-simple"
 ];
 
 

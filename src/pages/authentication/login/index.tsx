@@ -22,26 +22,41 @@ import {
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
+import { authService } from "@/services/auth.service";
+import { useUser } from "@/context/UserContext";
+import { User } from "@/context/UserContext";
 
 const Login = () => {
   const [showPassWord, setShowPassWord] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formValues, setFormValues] = useState({
-    email: "Test@gmail.com",
-    password: "Test@123",
+    email: "",
+    password: "",
   });
   const { email, password } = formValues;
   const router = useRouter();
+  const { setUser } = useUser();
+
   const handleUserValue = (event: ChangeEvent<HTMLInputElement>) => {
     setFormValues({ ...formValues, [event.target.name]: event.target.value });
   };
-  const formSubmitHandle = (event: FormEvent) => {
+
+  const formSubmitHandle = async (event: FormEvent) => {
     event.preventDefault();
-    if (email === "Test@gmail.com" && password === "Test@123") {
-      Cookies.set("token", JSON.stringify(true));
+    setIsLoading(true);
+    
+    try {
+      const response = await authService.loginWithEmail({ email, password });
+      Cookies.set("token", response.token);
+      // Store user info in cookies and context
+      Cookies.set("userInfo", JSON.stringify(response.user));
+      setUser(response.user as unknown as User);
       router.push("/dashboard/default");
-      toast.success("login successful");
-    } else {
-      toast.error("wrong");
+      toast.success("Login successful");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Login failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -63,7 +78,7 @@ const Login = () => {
                     <Input
                       type="email"
                       required
-                      placeholder="Test@gmail.com"
+                      placeholder="Enter your email"
                       value={email}
                       name="email"
                       onChange={handleUserValue}
@@ -74,10 +89,11 @@ const Login = () => {
                     <div className="form-input position-relative">
                       <Input
                         type={showPassWord ? "text" : "password"}
-                        placeholder="*********"
+                        placeholder="Enter your password"
                         onChange={handleUserValue}
                         value={password}
                         name="password"
+                        required
                       />
                       <div className="show-hide">
                         <span
@@ -105,8 +121,9 @@ const Login = () => {
                         color="primary"
                         className="btn-block w-100"
                         type="submit"
+                        disabled={isLoading}
                       >
-                        {SignIn}
+                        {isLoading ? "Signing in..." : SignIn}
                       </Button>
                     </div>
                   </FormGroup>
@@ -146,7 +163,7 @@ const Login = () => {
                     {DoNotAccount}
                     <Link
                       className="ms-2"
-                      href="/pages/authentication/register-simple"
+                      href="/authentication/register-simple"
                     >
                       {CreateAccount}
                     </Link>

@@ -29,7 +29,7 @@ const SearchBarContain = ({
               onChange={handleSearch}
               value={searchValue}
               className="Typeahead-input form-control-plaintext w-100"
-              placeholder="Search Cuba .."
+              placeholder="Search Medics 24/7 .."
             />
             <div className="spinner-border Typeahead-spinner">
               <span className="sr-only">{Loading}</span>

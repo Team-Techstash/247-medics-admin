@@ -9,6 +9,7 @@ import Layout from "../layout";
 import { CustomizerProvider } from "helper/Customizer/CustomizerProvider";
 import ContactProvider from "helper/Contacts/ContactProvider";
 import NoSsr from "utils/NoSsr";
+import { UserProvider } from '@/context/UserContext';
 
 const Myapp = ({ Component, pageProps }: any) => {
   const getLayout =Component.getLayout || ((page: any) => <Layout>{page}</Layout>);
@@ -23,20 +24,22 @@ const Myapp = ({ Component, pageProps }: any) => {
   }
 
   return (
-    <NoSsr>
-      {withoutLayoutThemePath.includes(updatedPath) ? (
-        <Component {...pageProps} />
-      ) : (
-        <CustomizerProvider>
-              <LayoutProvider>
-                    <ContactProvider>
-                      {getLayout(<Component {...pageProps} />)}
-                    </ContactProvider>
-              </LayoutProvider>
-        </CustomizerProvider>
-      )}
-      <ToastContainer />
-    </NoSsr>
+    <UserProvider>
+      <NoSsr>
+        {withoutLayoutThemePath.includes(updatedPath) ? (
+          <Component {...pageProps} />
+        ) : (
+          <CustomizerProvider>
+                <LayoutProvider>
+                      <ContactProvider>
+                        {getLayout(<Component {...pageProps} />)}
+                      </ContactProvider>
+                </LayoutProvider>
+          </CustomizerProvider>
+        )}
+        <ToastContainer />
+      </NoSsr>
+    </UserProvider>
   );
 };
 

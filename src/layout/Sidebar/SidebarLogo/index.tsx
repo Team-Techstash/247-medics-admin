@@ -11,7 +11,7 @@ const SidebarLogo = () => {
       <Link href={"/dashboard/default"}>
         <Image
           className="img-fluid for-light"
-          src={"/assets/images/logo/logo.png"}
+          src={"/assets/images/logo/medics-logo.png"}
           alt="icon"
           width={121}
           height={100}

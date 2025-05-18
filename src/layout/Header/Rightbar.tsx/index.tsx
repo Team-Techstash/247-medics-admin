@@ -2,7 +2,6 @@ import React from 'react'
 import { Col } from 'reactstrap'
 import Language from './Languages/index.tsx';
 import Searchbar from './Searchbar';
-import MoonLight from './MoonLight';
 import Notificationbar from './Notificationbar';
 import Profile from './Profile';
 
@@ -12,7 +11,6 @@ const Rightbar = () => {
             <ul className='nav-menus flex-row'>
                 <Language />
                 <Searchbar />
-                <MoonLight />
                 <Notificationbar />
                 <Profile />
             </ul>

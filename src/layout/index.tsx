@@ -93,7 +93,8 @@ const Layout = ({ children }: layoutProps) => {
   return (
     <NoSsr>
       <Head>
-        <title>Cuba - Premium Admin Template</title>
+        <link rel="icon" href="/favicon.ico" />
+        <title>24/7 Medics Admin</title>
       </Head>
       {/* <Loader /> */}
       <div

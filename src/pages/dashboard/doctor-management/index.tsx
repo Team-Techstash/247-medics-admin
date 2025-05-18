@@ -1,61 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, Card, CardBody, Col, Container, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row, Tooltip } from "reactstrap";
 import Breadcrumbs from "CommonElements/Breadcrumbs";
 import DataTable from "react-data-table-component";
 import { DoctorManage, DoctorManagementHeading } from "utils/Constant";
 import { useRouter } from "next/router";
-
-// Define the doctor data type
-interface Doctor {
-  docId: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-}
+import { doctorService } from "@/services/doctorService";
+import type { Doctor, PaginatedResponse } from "@/services/doctorService";
+import { useUser } from "@/context/UserContext";
+import { FiInfo } from "react-icons/fi";
 
 const DoctorManagement = () => {
   const router = useRouter();
+  const { user } = useUser();
   const [filterText, setFilterText] = useState("");
   const [modal, setModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [doctors, setDoctors] = useState<Doctor[]>([
-    {
-      docId: "DOC001",
-      name: "Dr. John Smith",
-      email: "john.smith@example.com",
-      phone: "+1 234-567-8900",
-      address: "123 Medical Center Dr, Suite 100"
-    },
-    {
-      docId: "DOC002",
-      name: "Dr. Sarah Johnson",
-      email: "sarah.johnson@example.com",
-      phone: "+1 234-567-8901",
-      address: "456 Health Plaza, Suite 200"
-    },
-    {
-      docId: "DOC003",
-      name: "Dr. Michael Brown",
-      email: "michael.brown@example.com",
-      phone: "+1 234-567-8902",
-      address: "789 Medical Way, Unit 300"
-    },
-    {
-      docId: "DOC004",
-      name: "Dr. Emily Davis",
-      email: "emily.davis@example.com",
-      phone: "+1 234-567-8903",
-      address: "321 Healthcare Blvd, Suite 400"
-    },
-    {
-      docId: "DOC005",
-      name: "Dr. Robert Wilson",
-      email: "robert.wilson@example.com",
-      phone: "+1 234-567-8904",
-      address: "654 Medical Circle, Unit 500"
-    }
-  ]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0
+  });
   
   const [formData, setFormData] = useState({
     // Step 1: Health Practitioner Application Form
@@ -93,20 +60,74 @@ const DoctorManagement = () => {
     }));
   };
 
-  // Filter doctors based on search text
-  const filteredDoctors = doctors.filter(
-    (item) =>
-      item.name.toLowerCase().includes(filterText.toLowerCase()) ||
-      item.docId.toLowerCase().includes(filterText.toLowerCase()) ||
-      item.email.toLowerCase().includes(filterText.toLowerCase()) ||
-      item.phone.toLowerCase().includes(filterText.toLowerCase()) ||
-      item.address.toLowerCase().includes(filterText.toLowerCase())
-  );
+  // Fetch doctors from API
+  const fetchDoctors = async (page: number = 1) => {
+    if (!user) {
+      setError('Please log in to view doctors');
+      return;
+    }
 
-  // Handle row click to view doctor details
-  const handleRowClick = (row: Doctor) => {
-    router.push(`/dashboard/doctor-management/${row.docId}`);
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await doctorService.getDoctors({
+        page,
+        limit: pagination.limit,
+        role: 'doctor'
+      });
+
+      if (!response || !response.data) {
+        throw new Error('Invalid response from server');
+      }
+
+      setDoctors(response.data);
+      setPagination(prev => ({
+        ...prev,
+        page: response.page || 1,
+        total: response.total || 0
+      }));
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch doctors. Please try again later.';
+      setError(errorMessage);
+      console.error('Error fetching doctors:', err);
+      // Set empty state
+      setDoctors([]);
+      setPagination(prev => ({
+        ...prev,
+        page: 1,
+        total: 0
+      }));
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Fetch doctors when component mounts and user is available
+  useEffect(() => {
+    if (user) {
+      fetchDoctors();
+    }
+  }, [user]);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    fetchDoctors(page);
+  };
+
+  // Filter doctors based on search text
+  const filteredDoctors = doctors.filter((item) => {
+    if (!item) return false;
+    
+    const searchText = filterText.toLowerCase();
+    return (
+      (item.firstName?.toLowerCase() || '').includes(searchText) ||
+      (item.lastName?.toLowerCase() || '').includes(searchText) ||
+      (item.email?.toLowerCase() || '').includes(searchText) ||
+      (item.phone?.toLowerCase() || '').includes(searchText) ||
+      (item.address?.streetAddress1?.toLowerCase() || '').includes(searchText)
+    );
+  });
 
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,13 +141,22 @@ const DoctorManagement = () => {
       setCurrentStep(currentStep + 1);
     } else {
       // Handle form submission
-      const newDocId = `DOC${String(doctors.length + 1).padStart(3, '0')}`;
       const newDoctor: Doctor = {
-        docId: newDocId,
-        name: `Dr. ${formData.firstName} ${formData.lastName}`,
+        _id: `DOC${String(doctors.length + 1).padStart(3, '0')}`,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
-        address: `${formData.streetAddress}${formData.addressLine2 ? ', ' + formData.addressLine2 : ''}, ${formData.city}, ${formData.state} ${formData.zipCode}`
+        address: {
+          streetAddress1: formData.streetAddress,
+          city: formData.city,
+          country: formData.country
+        },
+        role: 'doctor',
+        status: '',
+        emailVerified: false,
+        phoneVerified: false,
+        createdAt: new Date().toISOString()
       };
 
       // Add to doctors list
@@ -136,7 +166,7 @@ const DoctorManagement = () => {
       const fullDetails = {
         ...formData
       };
-      localStorage.setItem(`doctor_${newDocId}`, JSON.stringify(fullDetails));
+      localStorage.setItem(`doctor_${newDoctor._id}`, JSON.stringify(fullDetails));
 
       setModal(false);
       setCurrentStep(1);
@@ -173,39 +203,20 @@ const DoctorManagement = () => {
   // Table columns configuration
   const columns = [
     {
-      name: "Doctor ID",
-      selector: (row: Doctor) => row.docId,
-      sortable: true,
-      width: "120px", // Fixed width for ID column
-      cell: (row: Doctor) => (
-        <div>
-          <span id={`docId-${row.docId}`}>{row.docId}</span>
-          <Tooltip
-            placement="top"
-            isOpen={tooltipOpen[`docId-${row.docId}`]}
-            target={`docId-${row.docId}`}
-            toggle={() => toggleTooltip(`docId-${row.docId}`)}
-          >
-            Click to view doctor details
-          </Tooltip>
-        </div>
-      ),
-    },
-    {
       name: "Name",
-      selector: (row: Doctor) => row.name,
+      selector: (row: Doctor) => `${row.firstName} ${row.lastName}`,
       sortable: true,
-      width: "200px", // Fixed width for name column
+      width: "300px",
       cell: (row: Doctor) => (
         <div>
-          <span id={`name-${row.docId}`}>{row.name}</span>
+          <span id={`name-${row._id}`}>{`${row.firstName} ${row.lastName}`}</span>
           <Tooltip
             placement="top"
-            isOpen={tooltipOpen[`name-${row.docId}`]}
-            target={`name-${row.docId}`}
-            toggle={() => toggleTooltip(`name-${row.docId}`)}
+            isOpen={tooltipOpen[`name-${row._id}`]}
+            target={`name-${row._id}`}
+            toggle={() => toggleTooltip(`name-${row._id}`)}
           >
-            {row.name}
+            {`${row.firstName} ${row.lastName}`}
           </Tooltip>
         </div>
       ),
@@ -214,15 +225,15 @@ const DoctorManagement = () => {
       name: "Email",
       selector: (row: Doctor) => row.email,
       sortable: true,
-      width: "250px", // Fixed width for email column
+      width: "300px",
       cell: (row: Doctor) => (
         <div>
-          <span id={`email-${row.docId}`}>{row.email}</span>
+          <span id={`email-${row._id}`}>{row.email}</span>
           <Tooltip
             placement="top"
-            isOpen={tooltipOpen[`email-${row.docId}`]}
-            target={`email-${row.docId}`}
-            toggle={() => toggleTooltip(`email-${row.docId}`)}
+            isOpen={tooltipOpen[`email-${row._id}`]}
+            target={`email-${row._id}`}
+            toggle={() => toggleTooltip(`email-${row._id}`)}
           >
             {row.email}
           </Tooltip>
@@ -233,15 +244,15 @@ const DoctorManagement = () => {
       name: "Phone",
       selector: (row: Doctor) => row.phone,
       sortable: true,
-      width: "150px", // Fixed width for phone column
+      width: "300px",
       cell: (row: Doctor) => (
         <div>
-          <span id={`phone-${row.docId}`}>{row.phone}</span>
+          <span id={`phone-${row._id}`}>{row.phone}</span>
           <Tooltip
             placement="top"
-            isOpen={tooltipOpen[`phone-${row.docId}`]}
-            target={`phone-${row.docId}`}
-            toggle={() => toggleTooltip(`phone-${row.docId}`)}
+            isOpen={tooltipOpen[`phone-${row._id}`]}
+            target={`phone-${row._id}`}
+            toggle={() => toggleTooltip(`phone-${row._id}`)}
           >
             {row.phone}
           </Tooltip>
@@ -252,17 +263,46 @@ const DoctorManagement = () => {
       name: "Address",
       selector: (row: Doctor) => row.address,
       sortable: true,
-      minWidth: "300px", // Minimum width for address column
+      width: "350px",
+      cell: (row: Doctor) => {
+        const addressString = row.address 
+          ? `${row.address.streetAddress1 || ''}, ${row.address.city || ''}, ${row.address.country || ''}`
+          : '';
+        
+        return (
+          <div>
+            <span id={`address-${row._id}`}>{addressString}</span>
+            <Tooltip
+              placement="top"
+              isOpen={tooltipOpen[`address-${row._id}`]}
+              target={`address-${row._id}`}
+              toggle={() => toggleTooltip(`address-${row._id}`)}
+            >
+              {addressString}
+            </Tooltip>
+          </div>
+        );
+      },
+    },
+    {
+      name: "Actions",
+      width: "265px",
       cell: (row: Doctor) => (
-        <div>
-          <span id={`address-${row.docId}`}>{row.address}</span>
+        <div className="d-flex justify-content-center">
+          <span
+            id={`view-${row._id}`}
+            style={{ cursor: 'pointer', fontSize: '20px', display: 'flex', alignItems: 'center' }}
+            onClick={() => router.push(`/dashboard/doctor-management/${row._id}`)}
+          >
+            <FiInfo size={18} className="text-primary" />
+          </span>
           <Tooltip
             placement="top"
-            isOpen={tooltipOpen[`address-${row.docId}`]}
-            target={`address-${row.docId}`}
-            toggle={() => toggleTooltip(`address-${row.docId}`)}
+            isOpen={tooltipOpen[`view-${row._id}`]}
+            target={`view-${row._id}`}
+            toggle={() => toggleTooltip(`view-${row._id}`)}
           >
-            {row.address}
+            View doctor details
           </Tooltip>
         </div>
       ),
@@ -297,18 +337,25 @@ const DoctorManagement = () => {
                     Add Doctor
                   </Button>
                 </div>
+                {error && (
+                  <div className="alert alert-danger" role="alert">
+                    {error}
+                  </div>
+                )}
                 <div className="table-responsive">
                   <DataTable
-                    columns={columns}
+                    columns={columns as any}
                     data={filteredDoctors}
                     pagination
+                    paginationServer
+                    paginationTotalRows={pagination.total}
+                    onChangePage={handlePageChange}
+                    progressPending={loading}
                     highlightOnHover
-                    pointerOnHover
-                    onRowClicked={handleRowClick}
                     customStyles={{
                       table: {
                         style: {
-                          minWidth: '100%',
+                          width: '100%',
                         },
                       },
                       cells: {

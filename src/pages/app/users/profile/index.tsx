@@ -15,10 +15,10 @@ const UserProfiles = () => {
         <div className="user-profile">
           <Row>
             <Profile />
-            <WilliamProfile />
+            {/* <WilliamProfile />
             <Profile2 />
             <ProfileDetail />
-            <DetailImg />
+            <DetailImg /> */}
           </Row>  
         </div>
       </Container>

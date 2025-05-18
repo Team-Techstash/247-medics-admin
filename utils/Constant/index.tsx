@@ -1,6 +1,6 @@
 import ConfigDB from "config/ThemeConfig";
 
-export const Footertext: string = "Copyright 2023 © Cuba theme by pixelstrap";
+export const Footertext: string = "Copyright 2025 © 24/7 Medics";
 export const ImgPath: string = "/assets/images";
 export const Href: string = "#javascript";
 export const StarColor = "var(--theme-deafult)";

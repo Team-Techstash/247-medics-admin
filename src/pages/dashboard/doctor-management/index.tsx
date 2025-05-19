@@ -8,6 +8,8 @@ import { doctorService } from "@/services/doctorService";
 import type { Doctor, PaginatedResponse } from "@/services/doctorService";
 import { useUser } from "@/context/UserContext";
 import { FiInfo } from "react-icons/fi";
+import { Info } from "react-feather";
+import { ProgressComponent } from "components/Loader";
 
 const DoctorManagement = () => {
   const router = useRouter();
@@ -263,7 +265,7 @@ const DoctorManagement = () => {
       name: "Address",
       selector: (row: Doctor) => row.address,
       sortable: true,
-      width: "350px",
+      width: "300px",
       cell: (row: Doctor) => {
         const addressString = row.address 
           ? `${row.address.streetAddress1 || ''}, ${row.address.city || ''}, ${row.address.country || ''}`
@@ -286,7 +288,7 @@ const DoctorManagement = () => {
     },
     {
       name: "Actions",
-      width: "265px",
+      width: "205px",
       cell: (row: Doctor) => (
         <div className="d-flex justify-content-center">
           <span
@@ -333,9 +335,9 @@ const DoctorManagement = () => {
                       />
                     </Label>
                   </div>
-                  <Button color="primary" onClick={() => setModal(true)}>
+                  {/* <Button color="primary" onClick={() => setModal(true)}>
                     Add Doctor
-                  </Button>
+                  </Button> */}
                 </div>
                 {error && (
                   <div className="alert alert-danger" role="alert">
@@ -351,6 +353,7 @@ const DoctorManagement = () => {
                     paginationTotalRows={pagination.total}
                     onChangePage={handlePageChange}
                     progressPending={loading}
+                    progressComponent={<ProgressComponent />}
                     highlightOnHover
                     customStyles={{
                       table: {

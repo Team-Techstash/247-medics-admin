@@ -6,6 +6,7 @@ import { AppointmentManage, AppointmentManagementHeading } from "utils/Constant"
 import { useRouter } from "next/router";
 import { appointmentService, Appointment } from "../../../services/appointmentService";
 import { Info } from "react-feather";
+import { ProgressComponent } from "components/Loader";
 
 const AppointmentManagement = () => {
   const router = useRouter();
@@ -66,41 +67,62 @@ const AppointmentManagement = () => {
   const columns = [
     {
       name: "Patient",
-      selector: (row: Appointment) => row.patientId?.email || '',
+      selector: (row: Appointment) => `${row.patientId?.firstName || ''} ${row.patientId?.lastName || ''}`.trim(),
       sortable: true,
       width: "300px",
-      cell: (row: Appointment) => (
-        <div>
-          <span id={`patient-email-${row._id}`}>{row.patientId?.email || 'N/A'}</span>
-          <Tooltip
-            placement="top"
-            isOpen={tooltipOpen[`patient-email-${row._id}`]}
-            target={`patient-email-${row._id}`}
-            toggle={() => toggleTooltip(`patient-email-${row._id}`)}
-          >
-            {row.patientId?.email || 'N/A'}
-          </Tooltip>
-        </div>
-      ),
+      cell: (row: Appointment) => {
+        const fullName = `${row.patientId?.firstName || ''} ${row.patientId?.lastName || ''}`.trim();
+        return (
+          <div>
+            <span 
+              id={`patient-name-${row._id}`}
+              className="text-primary cursor-pointer"
+              onClick={() => router.push(`/dashboard/patient-management/${row.patientId?._id}?from=appointments`)}
+            >
+              {fullName || 'N/A'}
+            </span>
+            <Tooltip
+              placement="top"
+              isOpen={tooltipOpen[`patient-name-${row._id}`]}
+              target={`patient-name-${row._id}`}
+              toggle={() => toggleTooltip(`patient-name-${row._id}`)}
+            >
+              {fullName || 'N/A'}
+            </Tooltip>
+          </div>
+        );
+      },
     },
     {
       name: "Doctor",
-      selector: (row: Appointment) => row.patientId?.phone || '',
+      selector: (row: Appointment) => row.doctorId ? `${row.doctorId.firstName || ''} ${row.doctorId.lastName || ''}`.trim() : 'N/A',
       sortable: true,
       width: "300px",
-      cell: (row: Appointment) => (
-        <div>
-          <span id={`patient-phone-${row._id}`}>{row.patientId?.phone || 'N/A'}</span>
-          <Tooltip
-            placement="top"
-            isOpen={tooltipOpen[`patient-phone-${row._id}`]}
-            target={`patient-phone-${row._id}`}
-            toggle={() => toggleTooltip(`patient-phone-${row._id}`)}
-          >
-            {row.patientId?.phone || 'N/A'}
-          </Tooltip>
-        </div>
-      ),
+      cell: (row: Appointment) => {
+        if (!row.doctorId) {
+          return <div>N/A</div>;
+        }
+        const fullName = `${row.doctorId.firstName || ''} ${row.doctorId.lastName || ''}`.trim();
+        return (
+          <div>
+            <span 
+              id={`doctor-name-${row._id}`}
+              className="text-primary cursor-pointer"
+              onClick={() => router.push(`/dashboard/doctor-management/${row.doctorId?._id}?from=appointments`)}
+            >
+              {fullName || 'N/A'}
+            </span>
+            <Tooltip
+              placement="top"
+              isOpen={tooltipOpen[`doctor-name-${row._id}`]}
+              target={`doctor-name-${row._id}`}
+              toggle={() => toggleTooltip(`doctor-name-${row._id}`)}
+            >
+              {fullName || 'N/A'}
+            </Tooltip>
+          </div>
+        );
+      },
     },
     {
       name: "Appointment Time",
@@ -127,7 +149,7 @@ const AppointmentManagement = () => {
       name: "Status",
       selector: (row: Appointment) => row.status || '',
       sortable: true,
-      width: "350px",
+      width: "300px",
       cell: (row: Appointment) => {
         const getStatusStyle = (status: string) => {
           switch ((status || '').toLowerCase()) {
@@ -194,7 +216,7 @@ const AppointmentManagement = () => {
     },
     {
       name: "Actions",
-      width: "265px",
+      width: "205px",
       cell: (row: Appointment) => (
         <div className="d-flex justify-content-center">
           <span 
@@ -257,8 +279,9 @@ const AppointmentManagement = () => {
                         <option value="">All</option>
                         <option value="requested">Requested</option>
                         <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="in-progress">In Progress</option>
                         <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
                       </Input>
                     </FormGroup>
                     <FormGroup>
@@ -277,6 +300,8 @@ const AppointmentManagement = () => {
                     data={filteredAppointments}
                     pagination
                     highlightOnHover
+                    progressPending={loading}
+                    progressComponent={<ProgressComponent />}
                     customStyles={{
                       table: {
                         style: {

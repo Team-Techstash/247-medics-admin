@@ -4,6 +4,7 @@ import Breadcrumbs from "CommonElements/Breadcrumbs";
 import { AppointmentManage, AppointmentManagementHeading } from "utils/Constant";
 import { useRouter } from "next/router";
 import { appointmentService, Appointment } from "../../../services/appointmentService";
+import Loader from "components/Loader";
 
 const AppointmentDetails = () => {
   const router = useRouter();
@@ -23,7 +24,7 @@ const AppointmentDetails = () => {
       setLoading(true);
       const data = await appointmentService.getAdminAppointmentById(id as string);
       console.log('Fetched appointment data:', data);
-      setAppointment(data);
+      setAppointment(data as Appointment);
       setError(null);
     } catch (err) {
       setError('Failed to fetch appointment details. Please try again later.');
@@ -38,7 +39,21 @@ const AppointmentDetails = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="page-body">
+        <Container fluid={true}>
+          <Row>
+            <Col sm={12}>
+              <Card>
+                <CardBody>
+                  <Loader />
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+    );
   }
 
   if (error) {
@@ -75,20 +90,32 @@ const AppointmentDetails = () => {
               <CardBody style={{ transition: 'none' }}>
                 <h4 className="mb-4">Patient Information</h4>
                 {appointment.patientId ? (
-                  <>
-                    <div className="mb-3" style={{ transition: 'none' }}>
-                      <strong>Email:</strong> {appointment.patientId.email}
-                    </div>
-                    <div className="mb-3" style={{ transition: 'none' }}>
-                      <strong>Phone:</strong> {appointment.patientId.phone}
-                    </div>
-                    <div className="mb-3" style={{ transition: 'none' }}>
-                      <strong>Reason:</strong> {appointment.reason}
-                    </div>
-                    <div className="mb-3" style={{ transition: 'none' }}>
-                      <strong>Is For Self:</strong> {appointment.isForSelf ? 'Yes' : 'No'}
-                    </div>
-                  </>
+                  <Row>
+                    <Col md={4}>
+                      <div className="mb-3" style={{ transition: 'none' }}>
+                        <strong>Email:</strong> {appointment.patientId.email}
+                      </div>
+                      <div className="mb-3" style={{ transition: 'none' }}>
+                        <strong>Phone:</strong> {appointment.patientId.phone}
+                      </div>
+                    </Col>
+                    <Col md={4}>
+                      <div className="mb-3" style={{ transition: 'none' }}>
+                        <strong>Reason:</strong> {appointment.reason}
+                      </div>
+                      <div className="mb-3" style={{ transition: 'none' }}>
+                        <strong>Is For Self:</strong> {appointment.isForSelf ? 'Yes' : 'No'}
+                      </div>
+                    </Col>
+                    <Col md={4}>
+                      <div className="mb-3" style={{ transition: 'none' }}>
+                        <strong>Created At:</strong> {new Date(appointment.createdAt).toLocaleString()}
+                      </div>
+                      <div className="mb-3" style={{ transition: 'none' }}>
+                        <strong>Created By:</strong> {appointment.createdBy}
+                      </div>
+                    </Col>
+                  </Row>
                 ) : (
                   <div className="text-muted">No patient information available</div>
                 )}
@@ -98,92 +125,94 @@ const AppointmentDetails = () => {
             <Card style={{ transition: 'none' }}>
               <CardBody style={{ transition: 'none' }}>
                 <h4 className="mb-4">Appointment Details</h4>
-                <div className="mb-3" style={{ transition: 'none' }}>
-                  <strong>Scheduled Range:</strong>{" "}
-                  {appointment.scheduledRange ? (
-                    <>
-                      <div>Start: {new Date(appointment.scheduledRange.start).toLocaleString()}</div>
-                      <div>End: {new Date(appointment.scheduledRange.end).toLocaleString()}</div>
-                    </>
-                  ) : 'Not specified'}
-                </div>
-                <div className="mb-3" style={{ transition: 'none' }}>
-                  <strong>Service Type:</strong> {appointment.serviceType}
-                </div>
-                <div className="mb-3" style={{ transition: 'none' }}>
-                  <strong>Visit Type:</strong> {appointment.visitType}
-                </div>
-                <div className="mb-3" style={{ transition: 'none' }}>
-                  <strong>Appointment Mode:</strong> {appointment.appointmentMode}
-                </div>
-                <div className="mb-3" style={{ transition: 'none' }}>
-                  <strong>Duration:</strong> {appointment.durationMinutes} minutes
-                </div>
-                <div className="mb-3" style={{ transition: 'none' }}>
-                  <strong>Created At:</strong> {new Date(appointment.createdAt).toLocaleString()}
-                </div>
-                <div className="mb-3" style={{ transition: 'none' }}>
-                  <strong>Created By:</strong> {appointment.createdBy}
-                </div>
-                <div className="mb-3" style={{ transition: 'none' }}>
-                  <strong>Attended:</strong> {appointment.attended ? 'Yes' : 'No'}
-                </div>
-                <div className="mb-3" style={{ transition: 'none' }}>
-                  <strong>Status:</strong>{" "}
-                  <span
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '20px',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      display: 'inline-block',
-                      transition: 'none',
-                      ...(() => {
-                        const status = appointment.status?.toLowerCase() || 'unknown';
-                        switch (status) {
-                          case 'upcoming':
-                            return {
-                              backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                              color: '#198754',
-                              border: '1px solid rgba(25, 135, 84, 0.2)'
-                            };
-                          case 'pending':
-                            return {
-                              backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                              color: '#ffc107',
-                              border: '1px solid rgba(255, 193, 7, 0.2)'
-                            };
-                          case 'completed':
-                            return {
-                              backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                              color: '#0d6efd',
-                              border: '1px solid rgba(13, 110, 253, 0.2)'
-                            };
-                          case 'cancelled':
-                            return {
-                              backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                              color: '#dc3545',
-                              border: '1px solid rgba(220, 53, 69, 0.2)'
-                            };
-                          case 'requested':
-                            return {
-                              backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                              color: '#0d6efd',
-                              border: '1px solid rgba(13, 110, 253, 0.2)'
-                            };
-                          default:
-                            return {
-                              backgroundColor: 'rgba(108, 117, 125, 0.1)',
-                              color: '#6c757d',
-                              border: '1px solid rgba(108, 117, 125, 0.2)'
-                            };
-                        }
-                      })()
-                    }}
-                  >
-                    {appointment.status}
-                  </span>
-                </div>
+                <Row>
+                  <Col md={4}>
+                    <div className="mb-3" style={{ transition: 'none' }}>
+                      <strong>Scheduled Range:</strong>{" "}
+                      {appointment.scheduledRange ? (
+                        <>
+                          <div>Start: {new Date(appointment.scheduledRange.start).toLocaleString()}</div>
+                          <div>End: {new Date(appointment.scheduledRange.end).toLocaleString()}</div>
+                        </>
+                      ) : 'Not specified'}
+                    </div>
+                    <div className="mb-3" style={{ transition: 'none' }}>
+                      <strong>Service Type:</strong> {appointment.serviceType}
+                    </div>
+                    <div className="mb-3" style={{ transition: 'none' }}>
+                      <strong>Visit Type:</strong> {appointment.visitType}
+                    </div>
+                  </Col>
+                  <Col md={4}>
+                    <div className="mb-3" style={{ transition: 'none' }}>
+                      <strong>Appointment Mode:</strong> {appointment.appointmentMode}
+                    </div>
+                    <div className="mb-3" style={{ transition: 'none' }}>
+                      <strong>Duration:</strong> {appointment.durationMinutes} minutes
+                    </div>
+                    <div className="mb-3" style={{ transition: 'none' }}>
+                      <strong>Attended:</strong> {appointment.attended ? 'Yes' : 'No'}
+                    </div>
+                  </Col>
+                  <Col md={4}>
+                    <div className="mb-3" style={{ transition: 'none' }}>
+                      <strong>Status:</strong>{" "}
+                      <span
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: '20px',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                          display: 'inline-block',
+                          transition: 'none',
+                          ...(() => {
+                            const status = appointment.status?.toLowerCase() || 'unknown';
+                            switch (status) {
+                              case 'upcoming':
+                                return {
+                                  backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                                  color: '#198754',
+                                  border: '1px solid rgba(25, 135, 84, 0.2)'
+                                };
+                              case 'pending':
+                                return {
+                                  backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                                  color: '#ffc107',
+                                  border: '1px solid rgba(255, 193, 7, 0.2)'
+                                };
+                              case 'completed':
+                                return {
+                                  backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                                  color: '#0d6efd',
+                                  border: '1px solid rgba(13, 110, 253, 0.2)'
+                                };
+                              case 'cancelled':
+                                return {
+                                  backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                  color: '#dc3545',
+                                  border: '1px solid rgba(220, 53, 69, 0.2)'
+                                };
+                              case 'requested':
+                                return {
+                                  backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                                  color: '#0d6efd',
+                                  border: '1px solid rgba(13, 110, 253, 0.2)'
+                                };
+                              default:
+                                return {
+                                  backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                                  color: '#6c757d',
+                                  border: '1px solid rgba(108, 117, 125, 0.2)'
+                                };
+                            }
+                          })()
+                        }}
+                      >
+                        {appointment.status}
+                      </span>
+                    </div>
+                  </Col>
+                </Row>
               </CardBody>
             </Card>
           </Col>

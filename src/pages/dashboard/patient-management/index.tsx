@@ -6,6 +6,7 @@ import { PatientManage, PatientManagementHeading } from "utils/Constant";
 import { useRouter } from "next/router";
 import { patientService, Patient, PaginatedResponse } from "../../../services/patientService";
 import { Info } from "react-feather";
+import { ProgressComponent } from "components/Loader";
 
 const PatientManagement = () => {
   const router = useRouter();
@@ -137,7 +138,7 @@ const PatientManagement = () => {
         return '';
       },
       sortable: true,
-      width: "350px",
+      width: "300px",
       cell: (row: Patient) => {
         const addressText = typeof row.address === 'string' 
           ? row.address 
@@ -162,7 +163,7 @@ const PatientManagement = () => {
     },
     {
       name: "Actions",
-      width: "265px",
+      width: "205px",
       cell: (row: Patient) => (
         <div className="d-flex align-items-center">
           <span id={`info-${row._id}`} className="cursor-pointer" onClick={() => router.push(`/dashboard/patient-management/${row._id}`)}>
@@ -216,6 +217,7 @@ const PatientManagement = () => {
                     onChangeRowsPerPage={handlePerRowsChange}
                     onChangePage={handlePageChange}
                     progressPending={loading}
+                    progressComponent={<ProgressComponent />}
                     highlightOnHover
                     customStyles={{
                       table: {

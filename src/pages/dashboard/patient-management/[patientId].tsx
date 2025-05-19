@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Button, Card, CardBody, Col, Container, Row, Spinner } from "reactstrap";
+import { Button, Card, CardBody, Col, Container, Row } from "reactstrap";
 import Breadcrumbs from "CommonElements/Breadcrumbs";
 import { PatientManage, PatientManagementHeading } from "utils/Constant";
 import { patientService, Patient } from "../../../services/patientService";
+import Loader from "components/Loader";
 
 const PatientDetail = () => {
   const router = useRouter();
-  const { patientId } = router.query;
+  const { patientId, from } = router.query;
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +33,14 @@ const PatientDetail = () => {
     fetchPatientDetails();
   }, [patientId]);
 
+  const handleBackClick = () => {
+    if (from === 'appointments') {
+      router.push('/dashboard/appointments-management');
+    } else {
+      router.push('/dashboard/patient-management');
+    }
+  };
+
   if (loading) {
     return (
       <div className="page-body">
@@ -40,10 +49,7 @@ const PatientDetail = () => {
             <Col sm={12}>
               <Card>
                 <CardBody>
-                  <div className="text-center">
-                    <Spinner color="primary" />
-                    <h4 className="mt-2">Loading patient details...</h4>
-                  </div>
+                  <Loader />
                 </CardBody>
               </Card>
             </Col>
@@ -66,9 +72,9 @@ const PatientDetail = () => {
                     <Button
                       color="primary"
                       className="mt-3"
-                      onClick={() => router.push("/dashboard/patient-management")}
+                      onClick={handleBackClick}
                     >
-                      Back to Patient List
+                      {from === 'appointments' ? 'Back to Appointments' : 'Back to Patient List'}
                     </Button>
                   </div>
                 </CardBody>
@@ -92,9 +98,9 @@ const PatientDetail = () => {
           <Col sm={12}>
             <Button
               color="secondary"
-              onClick={() => router.push("/dashboard/patient-management")}
+              onClick={handleBackClick}
             >
-              Back to Patient List
+              {from === 'appointments' ? 'Back to Appointments' : 'Back to Patient List'}
             </Button>
           </Col>
         </Row>

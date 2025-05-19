@@ -7,10 +7,11 @@ import { doctorService } from "@/services/doctorService";
 import { appointmentService } from "@/services/appointmentService";
 import type { Doctor } from "@/services/doctorService";
 import type { Appointment } from "@/services/appointmentService";
+import Loader from "components/Loader";
 
 const DoctorDetails = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, from } = router.query;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [doctorData, setDoctorData] = useState<Doctor | null>(null);
@@ -51,7 +52,11 @@ const DoctorDetails = () => {
         <Container fluid={true}>
           <Row>
             <Col sm={12}>
-              <div className="text-center">Loading...</div>
+              <Card>
+                <CardBody>
+                  <Loader />
+                </CardBody>
+              </Card>
             </Col>
           </Row>
         </Container>
@@ -87,6 +92,14 @@ const DoctorDetails = () => {
     );
   }
 
+  const handleBackClick = () => {
+    if (from === 'appointments') {
+      router.push('/dashboard/appointments-management');
+    } else {
+      router.push('/dashboard/doctor-management');
+    }
+  };
+
   return (
     <div className="page-body">
       <Breadcrumbs
@@ -99,9 +112,9 @@ const DoctorDetails = () => {
           <Col sm={12}>
             <Button 
               color="secondary" 
-              onClick={() => router.push('/dashboard/doctor-management')}
+              onClick={handleBackClick}
             >
-              Back to Doctor List
+              {from === 'appointments' ? 'Back to Appointments' : 'Back to Doctor List'}
             </Button>
           </Col>
         </Row>

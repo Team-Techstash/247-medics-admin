@@ -65,6 +65,20 @@ export interface Appointment {
     _id: string;
     email: string;
     phone: string;
+    firstName: string;
+    lastName: string;
+    name: string;
+    emailVerified: boolean;
+    phoneVerified: boolean;
+    role: string;
+    status: string;
+  };
+  doctorId?: {
+    _id: string;
+    email: string;
+    phone: string;
+    firstName: string;
+    lastName: string;
     name: string;
     emailVerified: boolean;
     phoneVerified: boolean;

@@ -170,9 +170,9 @@ const AppointmentDetails = () => {
                             switch (status) {
                               case 'upcoming':
                                 return {
-                                  backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                                  color: '#198754',
-                                  border: '1px solid rgba(25, 135, 84, 0.2)'
+                                  backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                                  color: '#0d6efd',
+                                  border: '1px solid rgba(13, 110, 253, 0.2)'
                                 };
                               case 'pending':
                                 return {
@@ -182,9 +182,9 @@ const AppointmentDetails = () => {
                                 };
                               case 'completed':
                                 return {
-                                  backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                                  color: '#0d6efd',
-                                  border: '1px solid rgba(13, 110, 253, 0.2)'
+                                  backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                                  color: '#198754',
+                                  border: '1px solid rgba(25, 135, 84, 0.2)'
                                 };
                               case 'cancelled':
                                 return {
@@ -193,6 +193,12 @@ const AppointmentDetails = () => {
                                   border: '1px solid rgba(220, 53, 69, 0.2)'
                                 };
                               case 'requested':
+                                return {
+                                  backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                                  color: '#0d6efd',
+                                  border: '1px solid rgba(13, 110, 253, 0.2)'
+                                };
+                              case 'in-progress':
                                 return {
                                   backgroundColor: 'rgba(13, 110, 253, 0.1)',
                                   color: '#0d6efd',
@@ -215,6 +221,87 @@ const AppointmentDetails = () => {
                 </Row>
               </CardBody>
             </Card>
+
+            {appointment.paymentDetails && (
+              <Card style={{ transition: 'none' }} className="mt-4">
+                <CardBody style={{ transition: 'none' }}>
+                  <h4 className="mb-4">Payment Details</h4>
+                  <Row>
+                    <Col md={6}>
+                      <div className="mb-3" style={{ transition: 'none' }}>
+                        <strong>Amount:</strong> {appointment.paymentDetails.amount} {appointment.paymentDetails.currency.toUpperCase()}
+                      </div>
+                      <div className="mb-3" style={{ transition: 'none' }}>
+                        <strong>Payment Method:</strong> {appointment.paymentDetails.paymentMethod}
+                      </div>
+                      <div className="mb-3" style={{ transition: 'none' }}>
+                        <strong>Paid At:</strong> {new Date(appointment.paymentDetails.paidAt).toLocaleString()}
+                      </div>
+                    </Col>
+                    <Col md={6}>
+                      <div className="mb-3" style={{ transition: 'none' }}>
+                        <strong>Payment Status:</strong>{" "}
+                        <span
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '20px',
+                            fontSize: '0.875rem',
+                            fontWeight: '500',
+                            display: 'inline-block',
+                            transition: 'none',
+                            ...(() => {
+                              const status = appointment.paymentStatus?.toLowerCase() || 'unknown';
+                              switch (status) {
+                                case 'paid':
+                                  return {
+                                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                                    color: '#198754',
+                                    border: '1px solid rgba(25, 135, 84, 0.2)'
+                                  };
+                                case 'pending':
+                                  return {
+                                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                                    color: '#ffc107',
+                                    border: '1px solid rgba(255, 193, 7, 0.2)'
+                                  };
+                                case 'failed':
+                                  return {
+                                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                    color: '#dc3545',
+                                    border: '1px solid rgba(220, 53, 69, 0.2)'
+                                  };
+                                case 'refunded':
+                                  return {
+                                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                                    color: '#0d6efd',
+                                    border: '1px solid rgba(13, 110, 253, 0.2)'
+                                  };
+                                default:
+                                  return {
+                                    backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                                    color: '#6c757d',
+                                    border: '1px solid rgba(108, 117, 125, 0.2)'
+                                  };
+                              }
+                            })()
+                          }}
+                        >
+                          {appointment.paymentStatus}
+                        </span>
+                      </div>
+                      {appointment.paymentDetails.receiptUrl && (
+                        <Button
+                          color="primary"
+                          onClick={() => window.open(appointment.paymentDetails?.receiptUrl, '_blank')}
+                        >
+                          Download Receipt
+                        </Button>
+                      )}
+                    </Col>
+                  </Row>
+                </CardBody>
+              </Card>
+            )}
           </Col>
         </Row>
       </Container>

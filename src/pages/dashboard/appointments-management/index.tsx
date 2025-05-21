@@ -155,33 +155,45 @@ const AppointmentManagement = () => {
           switch ((status || '').toLowerCase()) {
             case 'requested':
               return {
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                color: '#0d6efd',
-                border: '1px solid rgba(13, 110, 253, 0.2)'
+                backgroundColor: '#e3f2fd',
+                color: '#1976d2',
+                border: '1px solid #90caf9'
               };
             case 'pending':
               return {
-                backgroundColor: 'rgba(255, 193, 7, 0.1)',
-                color: '#ffc107',
-                border: '1px solid rgba(255, 193, 7, 0.2)'
+                backgroundColor: '#fff3e0',
+                color: '#f57c00',
+                border: '1px solid #ffb74d'
+              };
+            case 'confirmed':
+              return {
+                backgroundColor: '#e8f5e9',
+                color: '#2e7d32',
+                border: '1px solid #81c784'
+              };
+            case 'in-progress':
+              return {
+                backgroundColor: '#e3f2fd',
+                color: '#1976d2',
+                border: '1px solid #90caf9'
               };
             case 'completed':
               return {
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                color: '#0d6efd',
-                border: '1px solid rgba(13, 110, 253, 0.2)'
+                backgroundColor: '#e8f5e9',
+                color: '#2e7d32',
+                border: '1px solid #81c784'
               };
             case 'cancelled':
               return {
-                backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                color: '#dc3545',
-                border: '1px solid rgba(220, 53, 69, 0.2)'
+                backgroundColor: '#ffebee',
+                color: '#c62828',
+                border: '1px solid #ef9a9a'
               };
             default:
               return {
-                backgroundColor: 'rgba(108, 117, 125, 0.1)',
-                color: '#6c757d',
-                border: '1px solid rgba(108, 117, 125, 0.2)'
+                backgroundColor: '#f5f5f5',
+                color: '#616161',
+                border: '1px solid #e0e0e0'
               };
           }
         };
@@ -209,6 +221,71 @@ const AppointmentManagement = () => {
               toggle={() => toggleTooltip(`status-${row._id}`)}
             >
               {row.status || 'N/A'}
+            </Tooltip>
+          </div>
+        );
+      },
+    },
+    {
+      name: "Payment Status",
+      selector: (row: Appointment) => row.paymentStatus || '',
+      sortable: true,
+      width: "200px",
+      cell: (row: Appointment) => {
+        if (!row.paymentStatus) return null;
+        
+        const getPaymentStatusStyle = (status: string) => {
+          switch ((status || '').toLowerCase()) {
+            case 'paid':
+              return {
+                backgroundColor: '#e8f5e9',
+                color: '#2e7d32',
+                border: '1px solid #81c784'
+              };
+            case 'pending':
+              return {
+                backgroundColor: '#fff3e0',
+                color: '#f57c00',
+                border: '1px solid #ffb74d'
+              };
+            case 'failed':
+              return {
+                backgroundColor: '#ffebee',
+                color: '#c62828',
+                border: '1px solid #ef9a9a'
+              };
+            default:
+              return {
+                backgroundColor: '#f5f5f5',
+                color: '#616161',
+                border: '1px solid #e0e0e0'
+              };
+          }
+        };
+
+        const statusStyle = getPaymentStatusStyle(row.paymentStatus);
+        return (
+          <div>
+            <span 
+              id={`payment-status-${row._id}`}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '20px',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                display: 'inline-block',
+                ...statusStyle
+              }}
+            >
+              {row.paymentStatus}
+            </span>
+            <Tooltip
+              placement="top"
+              isOpen={tooltipOpen[`payment-status-${row._id}`]}
+              target={`payment-status-${row._id}`}
+              toggle={() => toggleTooltip(`payment-status-${row._id}`)}
+            >
+              {row.paymentStatus}
             </Tooltip>
           </div>
         );

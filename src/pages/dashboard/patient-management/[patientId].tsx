@@ -145,7 +145,7 @@ const PatientDetail = () => {
                         <p className="mb-0">
                           {typeof patient.data.address === 'string' 
                             ? patient.data.address 
-                            : `${patient.data.address.streetAddress1 || ''} ${patient.data.address.streetAddress2 || ''} ${patient.data.address.city || ''} ${patient.data.address.state || ''} ${patient.data.address.postalCode || ''} ${patient.data.address.country || ''}`.trim()}
+                            : `${patient.data.address?.streetAddress1 || ''} ${patient.data.address?.streetAddress2 || ''} ${patient.data.address?.city || ''} ${patient.data.address?.state || ''} ${patient.data.address?.postalCode || ''} ${patient.data.address?.country || ''}`.trim()}
                         </p>
                       </div>
                       <div className="detail-item mt-3">

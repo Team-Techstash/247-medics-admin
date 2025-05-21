@@ -39,7 +39,7 @@ const CommonRegisterForm = ({ alignLogo }: commonFormPropsType) => {
       toast.success("Admin account created successfully!");
       // Wait for 2 seconds to show the toast before redirecting
       setTimeout(() => {
-        router.push('/pages/authentication/login-simple');
+        router.push('/authentication/login');
       }, 2000);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create admin account');

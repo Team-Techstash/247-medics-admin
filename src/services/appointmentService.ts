@@ -95,6 +95,15 @@ export interface Appointment {
   serviceType: string;
   status: string;
   visitType: string;
+  paymentStatus?: string;
+  paymentDetails?: {
+    paymentIntentId: string;
+    amount: number;
+    currency: string;
+    receiptUrl: string;
+    paymentMethod: string;
+    paidAt: string;
+  };
 }
 
 export interface PaginatedResponse<T> {

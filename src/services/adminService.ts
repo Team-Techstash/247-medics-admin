@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://3.14.150.170:5000/api';
+import { API_URL } from '../config/api.config';
 
 // Create axios instance with default config
 const api = axios.create({

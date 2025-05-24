@@ -2,7 +2,6 @@ import { Card, CardBody, Col, Container, Row } from "reactstrap";
 import Image from "next/image";
 import { Href, ImgPath } from "utils/Constant";
 import SvgIcon from "CommonElements/Icons/SvgIcon";
-import SocialMediaIcons from "CommonElements/SocialMediaIcons";
 import UserCardsFooter from "./UserCardsFooter";
 import { userCardData } from "Data/Users";
 
@@ -27,7 +26,6 @@ const UserCardsContainer = () => {
                     <a href={Href}>{item.name}</a>
                   </h5>
                   <span className="f-light">{item.userProfile}</span>
-                  <SocialMediaIcons listClassName="card-social" />
                   <UserCardsFooter item={item} />
                 </div>
               </CardBody>

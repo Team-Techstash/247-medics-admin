@@ -1,8 +1,7 @@
-import { registerWizardForm } from "Types/OtherPagePropsType";
 import { FormGroup, Input, Label } from "reactstrap";
 import { City, Country, EmailPassWord, SignUpToAccount, State } from "utils/Constant";
 
-const FormDone = ({ formValue, getUserData }: registerWizardForm) => {
+const FormDone = ({ formValue, getUserData }: any) => {
   const { country, state, city } = formValue;
   return (
     <div className="content">

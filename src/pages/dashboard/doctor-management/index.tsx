@@ -143,32 +143,32 @@ const DoctorManagement = () => {
       setCurrentStep(currentStep + 1);
     } else {
       // Handle form submission
-      const newDoctor: Doctor = {
-        _id: `DOC${String(doctors.length + 1).padStart(3, '0')}`,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        address: {
-          streetAddress1: formData.streetAddress,
-          city: formData.city,
-          country: formData.country
-        },
-        role: 'doctor',
-        status: '',
-        emailVerified: false,
-        phoneVerified: false,
-        createdAt: new Date().toISOString()
-      };
+      // const newDoctor: Doctor = {
+      //   _id: `DOC${String(doctors.length + 1).padStart(3, '0')}`,
+      //   firstName: formData.firstName,
+      //   lastName: formData.lastName,
+      //   email: formData.email,
+      //   phone: formData.phone,
+      //   address: {
+      //     streetAddress1: formData.streetAddress,
+      //     city: formData.city,
+      //     country: formData.country
+      //   },
+      //   role: 'doctor',
+      //   status: '',
+      //   emailVerified: false,
+      //   phoneVerified: false,
+      //   createdAt: new Date().toISOString()
+      // };
 
       // Add to doctors list
-      setDoctors([...doctors, newDoctor]);
+      // setDoctors([...doctors, newDoctor]);
 
       // Store full details in localStorage for the details page
       const fullDetails = {
         ...formData
       };
-      localStorage.setItem(`doctor_${newDoctor._id}`, JSON.stringify(fullDetails));
+      // localStorage.setItem(`doctor_${newDoctor._id}`, JSON.stringify(fullDetails));
 
       setModal(false);
       setCurrentStep(1);

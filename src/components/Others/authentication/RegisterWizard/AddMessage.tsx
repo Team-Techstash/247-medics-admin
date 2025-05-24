@@ -1,8 +1,7 @@
-import { registerWizardForm } from "Types/OtherPagePropsType";
 import { FormGroup, Input, Label } from 'reactstrap';
 import { Birthday, EmailPassWord, SignUpToAccount } from "utils/Constant";
 
-const AddMessage = ({formValue,getUserData}:registerWizardForm) => {
+const AddMessage = ({formValue,getUserData}:any) => {
   const {birthDate,age,passPort}=formValue
   return (
     <div id="step-3" className="content" >

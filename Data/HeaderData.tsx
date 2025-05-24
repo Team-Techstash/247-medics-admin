@@ -59,9 +59,4 @@ export const profileListData: profileType[] = [
         text: 'Account',
         path: '/app/users/profile'
     },
-    {
-        icon: 'Settings',
-        text: 'Settings',
-        path: '/app/users/edit'
-    }
 ]

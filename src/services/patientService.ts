@@ -23,6 +23,25 @@ export interface Patient {
   }
 }
 
+export interface Patient {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: {
+    streetAddress1?: string;
+    streetAddress2?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  } | string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;

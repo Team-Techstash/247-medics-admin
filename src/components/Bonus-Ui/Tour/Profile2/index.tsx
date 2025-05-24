@@ -1,7 +1,6 @@
 import React from 'react'
 import { Card, Col, Row } from 'reactstrap'
 import { Jan25, Profile2Text, hours10ago, min1read } from 'utils/Constant'
-import ProfileLike from '../CommonProfile/ProfileLike'
 import Image from 'next/image'
 import MountainImg from 'public/assets/images/other-images/mountain.jpg';
 import SeaImg from 'public/assets/images/other-images/sea.jpg'
@@ -26,7 +25,6 @@ const Profile2 = () => {
                             </div>
                         </Col>
                     </Row>
-                    <ProfileLike />
                 </div>
             </Card >
         </Col >

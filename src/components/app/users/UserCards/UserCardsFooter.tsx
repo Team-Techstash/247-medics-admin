@@ -1,8 +1,7 @@
-import { cardType } from "Types/UserType";
 import { Followers, Following, Posts } from "utils/Constant";
 
 
-const UserCardsFooter = ({ item }: cardType) => {
+const UserCardsFooter = ({ item }: any) => {
   return (
       <ul className="social-follow">
         <li><h5 className="mb-0">{item.follower}</h5><span className="f-light">{Posts}</span></li>

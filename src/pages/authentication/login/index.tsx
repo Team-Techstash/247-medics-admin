@@ -104,18 +104,6 @@ const Login = () => {
                     </div>
                   </FormGroup>
                   <FormGroup className="mb-0 form-group">
-                    <div className="checkbox p-0">
-                      <Input id="checkbox1" type="checkbox" />
-                      <Label className="text-muted" htmlFor="checkbox1">
-                        {RememberPassword}
-                      </Label>
-                    </div>
-                    <Link
-                      className="link"
-                      href="/pages/authentication/forget-pwd"
-                    >
-                      {ForgotPassword}
-                    </Link>
                     <div className="text-end mt-3">
                       <Button
                         color="primary"
@@ -127,47 +115,6 @@ const Login = () => {
                       </Button>
                     </div>
                   </FormGroup>
-                  <h6 className="text-muted mt-4 or">{SignInWith}</h6>
-                  <div className="social mt-4">
-                    <div className="btn-showcase">
-                      <a
-                        className="btn btn-light"
-                        href="https://www.linkedin.com/login"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {" "}
-                        <Linkedin className="txt-linkedin" /> {linkedInHeading}
-                      </a>
-                      <a
-                        className="btn btn-light"
-                        href="https://twitter.com/login?lang=en"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <Twitter className="txt-twitter" />
-                        {TwitterHeading}
-                      </a>
-                      <a
-                        className="btn btn-light"
-                        href="https://www.facebook.com/"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        <Facebook className="txt-fb" />
-                        {FacebookHeading}
-                      </a>
-                    </div>
-                  </div>
-                  <p className="mt-4 mb-0 text-center">
-                    {DoNotAccount}
-                    <Link
-                      className="ms-2"
-                      href="/authentication/register-simple"
-                    >
-                      {CreateAccount}
-                    </Link>
-                  </p>
                 </form>
               </div>
             </div>

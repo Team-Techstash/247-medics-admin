@@ -1,8 +1,7 @@
-import { registerWizardForm } from "Types/OtherPagePropsType";
 import { FormGroup, Input, Label } from "reactstrap";
 import { ConfirmPassword, EmailAddress, EmailPassWord, Emailaddress, Password, SignUpToAccount } from "utils/Constant";
 
-const EmailPassword = ({ formValue, getUserData }: registerWizardForm) => {
+const EmailPassword = ({ formValue, getUserData }: any) => {
   const { email, password, confirmPassword } = formValue;
   return (
     <div id="step-2" className="content">

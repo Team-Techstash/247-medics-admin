@@ -3,7 +3,6 @@ import React from 'react'
 import { Col, Media, Row } from 'reactstrap'
 import UserImg from 'public/assets/images/user/7.jpg'
 import { WilliamJennings } from 'utils/Constant'
-import SocialIcon from './SocialIcon'
 
 type propstype = {
     month: string;

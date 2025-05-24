@@ -63,21 +63,3 @@ export const iconDemoData: IconDataType[] = [
 
     }
 ]
-
-export const OutlineData: OutlineDataType[] = [
-    {
-        id: 'outline1',
-        head: Webdesignersdo,
-        text: SimpleAccordionText
-    },
-    {
-        id: 'outline2',
-        head: Usewebdesign,
-        text: SimpleAccordionText1
-    },
-    {
-        id: 'outline3',
-        head: Elementswebdesign,
-        text: SimpleAccordionText2
-    }
-]

@@ -1,8 +1,7 @@
-import { registerWizardForm } from "Types/OtherPagePropsType";
 import { FormGroup, Input, Label } from "reactstrap";
 import { ContactNo, EmailPassWord, FirstName, LastName, SignUpToAccount } from "utils/Constant";
 
-const SignUpAccount = ({ formValue, getUserData }: registerWizardForm) => {
+const SignUpAccount = ({ formValue, getUserData }: any) => {
   const { contactNumber, lastName, firstName } = formValue;
   return (
     <div className="content">

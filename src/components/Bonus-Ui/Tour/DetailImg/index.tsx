@@ -5,7 +5,6 @@ import Image from 'next/image'
 import SidebarImg from 'public/assets/images/other-images/sidebar-bg.jpg'
 import Link from 'next/link'
 import { TextDetail } from 'utils/Constant'
-import ProfileLike from '../CommonProfile/ProfileLike'
 
 const DetailImg = () => {
     return (
@@ -20,7 +19,6 @@ const DetailImg = () => {
                                     <Image className="img-fluid rounded" src={SidebarImg} alt="nature" />
                                 </Link>
                             </div>
-                            <ProfileLike />
                         </Col>
                         <Col xl={6}>
                             <p className="block-ellipsis pt-xl-0 pt-3">{TextDetail}</p>

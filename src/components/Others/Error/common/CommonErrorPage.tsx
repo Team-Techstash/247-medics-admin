@@ -1,11 +1,10 @@
-import { errorPageCommonProps } from "Types/OtherPagePropsType";
 import Image from "next/image";
 import Link from "next/link";
 import { Col, Container } from "reactstrap";
 import { BackToHomePage, CommonErrorPageText, ImgPath } from "utils/Constant";
 
 
-const CommonErrorPage = ({tittle,tittleClassName,BtnClassName,}: errorPageCommonProps) => {
+const CommonErrorPage = ({tittle,tittleClassName,BtnClassName,}: any) => {
   return (
     <div className="page-wrapper compact-wrapper" id="pageWrapper">
       <div className="error-wrapper">

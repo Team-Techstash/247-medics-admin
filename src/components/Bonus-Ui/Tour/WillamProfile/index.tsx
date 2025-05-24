@@ -2,7 +2,6 @@ import React from 'react'
 import { Card, Col } from 'reactstrap'
 import { Jan25, Minread6, ProfileHead2, ProfileHead2Text, ProfileText2, min3ago } from 'utils/Constant'
 import Image from 'next/image'
-import ProfileLike from '../CommonProfile/ProfileLike'
 import Link from 'next/link'
 import profileImg from '../../../../../public/assets/images/other-images/profile-style-img3.png'
 import CommonProfileHead from '../CommonProfile'
@@ -21,7 +20,6 @@ const WilliamProfile = () => {
                         </Link>
                         <p className="block-ellipsis pt-3">{ProfileText2}</p>
                     </div>
-                    <ProfileLike />
                 </div>
             </Card >
         </Col >

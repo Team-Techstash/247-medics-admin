@@ -3,7 +3,6 @@ import { Row } from 'reactstrap'
 import ProfileMail from './ProfileMail'
 import ProfileName from './ProfileName'
 import ProfileContect from './ProfileContect'
-import SocialMedia from './SocialMedia'
 import ProfileFollower from './ProfileFollower'
 
 const ProfileDetail = () => {
@@ -15,7 +14,6 @@ const ProfileDetail = () => {
                 <ProfileContect />
             </Row>
             <hr />
-            <SocialMedia />
             <ProfileFollower />
         </div>
 

@@ -15,14 +15,14 @@ const CommonLogo = ({ alignLogo }: propsType) => {
         width={121}
         height={35}
         className="img-fluid for-light"
-        src={`${ImgPath}/logo/medics-logo.png`}
+        src={`/assets/images/logo/medics-logo.png`}
         alt="looginpage"
       />
       <Image
         width={121}
         height={35}
         className="img-fluid for-dark"
-        src={`${ImgPath}/logo/logo_dark.png`}
+        src={`/assets/images/logo/logo_dark.png`}
         alt="looginpage"
       />
     </Link>

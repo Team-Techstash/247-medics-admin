@@ -8,7 +8,7 @@ const LoginWithBackGroundImage = () => {
     <Container fluid>
       <Row>
         <Col xl={5} className="b-center bg-size">
-        <RatioImage className="bg-img-cover bg-center img-fluid w-100" src={`${ImgPath}/login/3.jpg`} alt=""/>
+        <RatioImage className="bg-img-cover bg-center img-fluid w-100" src={`/assets/images/login/3.jpg`} alt=""/>
         </Col>
         <Col xl={7} className="p-0">
           <CommonForm alignLogo="text-start" />

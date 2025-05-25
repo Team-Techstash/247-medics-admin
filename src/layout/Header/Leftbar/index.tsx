@@ -16,14 +16,14 @@ const Leftbar = () => {
           <Link href={"/dashboard/default"}>
             <Image
               className="img-fluid for-light"
-              src={`${ImgPath}/logo/logo.png`}
+              src={`/assets/images/logo/logo.png`}
               alt="logo"
               width={100}
               height={100}
             />
             <Image
               className="img-fluid for-dark"
-              src={`${ImgPath}/logo/logo_dark.png`}
+              src={`/assets/images/logo/logo_dark.png`}
               alt="logo"
               width={100}
               height={100}

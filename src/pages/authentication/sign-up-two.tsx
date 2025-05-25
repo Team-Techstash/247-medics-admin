@@ -8,7 +8,7 @@ const RegisterWithImage = () => {
     <Container fluid className="p-0">
       <Row className="m-0">
         <Col xl={7} className="p-0 b-center bg-size loginImageBg1">
-          <RatioImage className="bg-img-cover bg-center img-fluid w-100" src={`${ImgPath}/login/1.jpg`} alt="" />
+          <RatioImage className="bg-img-cover bg-center img-fluid w-100" src={`/assets/images/login/1.jpg`} alt="" />
         </Col>
         <Col xl={5} className="p-0">
           <CommonRegisterForm alignLogo="text-start" />

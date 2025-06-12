@@ -10,7 +10,11 @@ import {
   Legend,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { Card, CardBody, Col, Row, Input, Label, Table, Badge, Button } from 'reactstrap';
+import { Card, CardBody, Col, Row, Input, Label, Table, Badge, Button, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { DateRange } from 'react-date-range';
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
+import { addDays, subDays, format, parse } from 'date-fns';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -98,9 +102,98 @@ const statusColors: Record<string, string> = {
   cancelled: 'secondary',
 };
 
+const quickRanges = [
+  { label: 'Yesterday', range: () => {
+      const yesterday = subDays(new Date(), 1);
+      return { startDate: yesterday, endDate: yesterday };
+    }
+  },
+  { label: 'Last 7 days', range: () => ({
+      startDate: subDays(new Date(), 6),
+      endDate: new Date(),
+    })
+  },
+  { label: 'Last 30 days', range: () => ({
+      startDate: subDays(new Date(), 29),
+      endDate: new Date(),
+    })
+  },
+  { label: 'Last 90 days', range: () => ({
+      startDate: subDays(new Date(), 89),
+      endDate: new Date(),
+    })
+  },
+  { label: 'Last 365 days', range: () => ({
+      startDate: subDays(new Date(), 364),
+      endDate: new Date(),
+    })
+  },
+  { label: 'Last Month', range: () => {
+      const now = new Date();
+      const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      return { startDate: firstDayLastMonth, endDate: lastDayLastMonth };
+    }
+  },
+  { label: 'Last 12 months', range: () => ({
+      startDate: subDays(new Date(), 364),
+      endDate: new Date(),
+    })
+  },
+  { label: 'Last Year', range: () => {
+      const now = new Date();
+      const firstDayLastYear = new Date(now.getFullYear() - 1, 0, 1);
+      const lastDayLastYear = new Date(now.getFullYear() - 1, 11, 31);
+      return { startDate: firstDayLastYear, endDate: lastDayLastYear };
+    }
+  },
+];
+
 const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [appointments, setAppointments] = useState(mockAppointments);
+
+  // Date range picker state
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: subDays(new Date(), 29),
+      endDate: new Date(),
+      key: 'selection',
+    },
+  ]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [quickDropdownOpen, setQuickDropdownOpen] = useState(false);
+
+  const handleQuickRange = (rangeFn: () => { startDate: Date, endDate: Date }) => {
+    setDateRange([{ ...rangeFn(), key: 'selection' }]);
+    setQuickDropdownOpen(false);
+  };
+
+  // Filter chart data based on date range
+  const { startDate, endDate } = dateRange[0];
+  // Helper to parse label to date (assumes year 2025 for mock data)
+  const parseLabelToDate = (label: string) => parse(label + ', 2025', 'MMM d, yyyy', new Date());
+  // Find indices for slicing data
+  const startIdx = chartData.labels.findIndex(label => parseLabelToDate(label) >= startDate);
+  const endIdx = chartData.labels.findIndex(label => parseLabelToDate(label) > endDate);
+  const filteredLabels = chartData.labels.slice(
+    startIdx === -1 ? 0 : startIdx,
+    endIdx === -1 ? chartData.labels.length : endIdx
+  );
+  const filteredData = chartData.datasets[0].data.slice(
+    startIdx === -1 ? 0 : startIdx,
+    endIdx === -1 ? chartData.labels.length : endIdx
+  );
+  const filteredChartData = {
+    ...chartData,
+    labels: filteredLabels,
+    datasets: [
+      {
+        ...chartData.datasets[0],
+        data: filteredData,
+      },
+    ],
+  };
 
   // Filter appointments by payment status
   const filteredAppointments = statusFilter
@@ -127,12 +220,59 @@ const Dashboard = () => {
             </Col>
           ))}
         </Row>
+        {/* Date Range Picker */}
+        <div className="mb-3" style={{ position: 'relative', zIndex: 10 }}>
+          <Button onClick={() => setShowDatePicker(!showDatePicker)}>
+            {`${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`}
+          </Button>
+          {showDatePicker && (
+            <div
+              style={{
+                position: 'absolute',
+                zIndex: 100,
+                background: '#fff',
+                borderRadius: 12,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                padding: 20,
+                minWidth: 340,
+                marginTop: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'stretch',
+                gap: 12,
+              }}
+            >
+              {/* Quick selection dropdown */}
+              <Dropdown isOpen={quickDropdownOpen} toggle={() => setQuickDropdownOpen(!quickDropdownOpen)}>
+                <DropdownToggle caret color="light" style={{ width: '100%' }}>
+                  Quick Ranges
+                </DropdownToggle>
+                <DropdownMenu style={{ width: '100%' }}>
+                  {quickRanges.map((q) => (
+                    <DropdownItem key={q.label} onClick={() => handleQuickRange(q.range)}>
+                      {q.label}
+                    </DropdownItem>
+                  ))}
+                </DropdownMenu>
+              </Dropdown>
+              <DateRange
+                editableDateInputs={true}
+                onChange={(item: any) => setDateRange([item.selection])}
+                moveRangeOnFirstSelection={false}
+                ranges={dateRange}
+                maxDate={new Date()}
+                className="mb-0"
+              />
+              <Button color="secondary" size="sm" onClick={() => setShowDatePicker(false)} style={{ width: '100%' }}>Close</Button>
+            </div>
+          )}
+        </div>
         {/* Line Chart */}
         <Card className="mb-4">
           <CardBody>
             <h5 className="card-title">Sessions Trend</h5>
             <div style={{ height: '300px' }}>
-              <Line data={chartData} options={chartOptions} />
+              <Line data={filteredChartData} options={chartOptions} />
             </div>
           </CardBody>
         </Card>

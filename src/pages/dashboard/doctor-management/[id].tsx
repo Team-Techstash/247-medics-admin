@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { Card, CardBody, Col, Container, Row, Button } from "reactstrap";
+import { Card, CardBody, Col, Container, Row, Button, Modal, ModalHeader, ModalBody, Alert, Input, FormGroup, Label, Spinner } from "reactstrap";
 import Breadcrumbs from "CommonElements/Breadcrumbs";
 import { DoctorManage, DoctorManagementHeading } from "utils/Constant";
 import { useRouter } from "next/router";
 import { doctorService } from "@/services/doctorService";
 import { appointmentService } from "@/services/appointmentService";
+import { reviewService } from "@/services/reviewService";
 import type { Doctor } from "@/services/doctorService";
 import type { Appointment } from "@/services/appointmentService";
+import type { Review } from "@/services/reviewService";
 import Loader from "components/Loader";
 
 const DoctorDetails = () => {
@@ -16,6 +18,13 @@ const DoctorDetails = () => {
   const [error, setError] = useState<string | null>(null);
   const [doctorData, setDoctorData] = useState<Doctor | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [showReviews, setShowReviews] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [bannerError, setBannerError] = useState<string | null>(null);
+  const [allowStatusVerification, setAllowStatusVerification] = useState<boolean | undefined>(doctorData?.data.docProfile?.regulatoryDetails.allowStatusVerification);
+  const [showSaveVerification, setShowSaveVerification] = useState(false);
+  const [savingVerification, setSavingVerification] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +50,45 @@ const DoctorDetails = () => {
 
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    setAllowStatusVerification(doctorData?.data.docProfile?.regulatoryDetails.allowStatusVerification);
+  }, [doctorData]);
+
+  const handleShowReviews = async () => {
+    if (typeof id === 'string') {
+      try {
+        setLoadingReviews(true);
+        const reviewsData = await reviewService.getReviewsByDoctorId(id);
+        setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+        setShowReviews(true);
+      } catch (err: any) {
+        setBannerError(err.response?.data?.message || "Failed to fetch reviews");
+        setReviews([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    }
+  };
+
+  const handleToggleVerification = () => {
+    setAllowStatusVerification((prev) => !prev);
+    setShowSaveVerification(true);
+  };
+
+  const handleSaveVerification = async () => {
+    if (!doctorData) return;
+    setSavingVerification(true);
+    try {
+      await doctorService.updateAllowStatusVerification(doctorData.data._id, !!allowStatusVerification, doctorData);
+      setShowSaveVerification(false);
+      setBannerError(null);
+    } catch (err: any) {
+      setBannerError(err.response?.data?.message || "Failed to update status verification");
+    } finally {
+      setSavingVerification(false);
+    }
+  };
 
   if (!id) {
     return null; // Return null on initial render when id is undefined
@@ -102,6 +150,11 @@ const DoctorDetails = () => {
 
   return (
     <div className="page-body">
+      {bannerError && (
+        <Alert color="danger" isOpen={!!bannerError} toggle={() => setBannerError(null)} className="text-center">
+          {bannerError}
+        </Alert>
+      )}
       <Breadcrumbs
         title={DoctorManage}
         mainTitle={DoctorManagementHeading}
@@ -109,7 +162,7 @@ const DoctorDetails = () => {
       />
       <Container fluid={true}>
         <Row className="mb-4">
-          <Col sm={12}>
+          <Col sm={6}>
             <Button 
               color="secondary" 
               onClick={handleBackClick}
@@ -117,7 +170,57 @@ const DoctorDetails = () => {
               {from === 'appointments' ? 'Back to Appointments' : 'Back to Doctor List'}
             </Button>
           </Col>
+          <Col sm={6} className="text-end">
+            <Button 
+              color="primary" 
+              onClick={handleShowReviews}
+            >
+              Show All Reviews
+            </Button>
+          </Col>
         </Row>
+
+        {/* Reviews Modal */}
+        <Modal isOpen={showReviews} toggle={() => setShowReviews(false)} size="lg">
+          <ModalHeader toggle={() => setShowReviews(false)}>
+            Doctor Reviews
+          </ModalHeader>
+          <ModalBody>
+            {loadingReviews ? (
+              <div className="text-center">
+                <Loader />
+              </div>
+            ) : reviews.length === 0 ? (
+              <div className="text-center">No reviews available</div>
+            ) : (
+              <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                {reviews.map((review) => (
+                  <Card key={review._id} className="mb-3">
+                    <CardBody>
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div>
+                          <h6 className="mb-2">
+                            {review.patientId.firstName} {review.patientId.lastName}
+                          </h6>
+                          <div className="text-warning mb-2">
+                            {'★'.repeat(Math.floor(review.rating))}
+                            {'☆'.repeat(5 - Math.floor(review.rating))}
+                            <span className="ms-2 text-dark">({review.rating}/5)</span>
+                          </div>
+                          <p className="mb-0">{review.comment}</p>
+                        </div>
+                        <small className="text-muted">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </small>
+                      </div>
+                    </CardBody>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </ModalBody>
+        </Modal>
+
         <Row>
           {/* Doctor Information Card */}
           <Col sm={12}>
@@ -128,7 +231,16 @@ const DoctorDetails = () => {
                   <Col md={4}>
                     <div className="mb-3">
                       <label className="form-label fw-bold">Full Name:</label>
-                      <p>{`${doctorData?.data.firstName} ${doctorData?.data.lastName}`}</p>
+                      <p>
+                        {`${doctorData?.data.firstName} ${doctorData?.data.lastName}`}
+                        {doctorData?.data.averageRating ? (
+                          <span className="ms-2 text-warning">
+                            ({doctorData.data.averageRating}/5)
+                          </span>
+                        ) : (
+                          <span className="ms-2 text-muted">(N/A)</span>
+                        )}
+                      </p>
                     </div>
                     <div className="mb-3">
                       <label className="form-label fw-bold">Email:</label>
@@ -169,23 +281,23 @@ const DoctorDetails = () => {
                   <Col md={4}>
                     <div className="mb-3">
                       <label className="form-label fw-bold">Full Name:</label>
-                      <p>{doctorData?.data.docProfile?.emergencyContact.fullName}</p>
+                      <p>{doctorData?.data.docProfile?.emergencyContact?.fullName}</p>
                     </div>
                     <div className="mb-3">
                       <label className="form-label fw-bold">Relation:</label>
-                      <p>{doctorData?.data.docProfile?.emergencyContact.relation}</p>
+                      <p>{doctorData?.data.docProfile?.emergencyContact?.relation}</p>
                     </div>
                   </Col>
                   <Col md={4}>
                     <div className="mb-3">
                       <label className="form-label fw-bold">Phone:</label>
-                      <p>{doctorData?.data.docProfile?.emergencyContact.phone}</p>
+                      <p>{doctorData?.data.docProfile?.emergencyContact?.phone}</p>
                     </div>
                   </Col>
                   <Col md={4}>
                     <div className="mb-3">
                       <label className="form-label fw-bold">Email:</label>
-                      <p>{doctorData?.data.docProfile?.emergencyContact.email}</p>
+                      <p>{doctorData?.data.docProfile?.emergencyContact?.email}</p>
                     </div>
                   </Col>
                 </Row>
@@ -202,23 +314,44 @@ const DoctorDetails = () => {
                   <Col md={4}>
                     <div className="mb-3">
                       <label className="form-label fw-bold">Authority Name:</label>
-                      <p>{doctorData?.data.docProfile?.regulatoryDetails.authorityName}</p>
+                      <p>{doctorData?.data.docProfile?.regulatoryDetails?.authorityName}</p>
                     </div>
                     <div className="mb-3">
                       <label className="form-label fw-bold">Registration Number:</label>
-                      <p>{doctorData?.data.docProfile?.regulatoryDetails.registrationNumber}</p>
+                      <p>{doctorData?.data.docProfile?.regulatoryDetails?.registrationNumber}</p>
                     </div>
                   </Col>
                   <Col md={4}>
                     <div className="mb-3">
                       <label className="form-label fw-bold">On Specialist Register:</label>
-                      <p>{doctorData?.data.docProfile?.regulatoryDetails.onSpecialistRegister ? 'Yes' : 'No'}</p>
+                      <p>{doctorData?.data.docProfile?.regulatoryDetails?.onSpecialistRegister ? 'Yes' : 'No'}</p>
                     </div>
                   </Col>
                   <Col md={4}>
                     <div className="mb-3">
                       <label className="form-label fw-bold">Allow Status Verification:</label>
-                      <p>{doctorData?.data.docProfile?.regulatoryDetails.allowStatusVerification ? 'Yes' : 'No'}</p>
+                      <div className="d-flex align-items-center">
+                        <FormGroup switch className="mb-0">
+                          <Input
+                            type="switch"
+                            checked={!!allowStatusVerification}
+                            onChange={handleToggleVerification}
+                            disabled={savingVerification}
+                          />
+                          <Label switch>{allowStatusVerification ? 'Yes' : 'No'}</Label>
+                        </FormGroup>
+                        {showSaveVerification && (
+                          <Button
+                            color="primary"
+                            size="sm"
+                            className="ms-3"
+                            onClick={handleSaveVerification}
+                            disabled={savingVerification}
+                          >
+                            {savingVerification ? <Spinner size="sm" /> : 'Save'}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </Col>
                 </Row>

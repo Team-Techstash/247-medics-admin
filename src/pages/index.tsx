@@ -1,5 +1,14 @@
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+
 const Home = () => {
-  return <></>;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push('/dashboard/default');
+  }, [router]);
+
+  return null;
 };
 
 export default Home;

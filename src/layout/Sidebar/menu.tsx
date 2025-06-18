@@ -6,14 +6,19 @@ export const MenuList: sidebarMenuType[] = [
     menucontent: "Dashboards,Widgets",
     Items: [
       {
-        title: "Dashboards",
+        title: "24/7 Medics",
         id: 1,
         icon: "home",
         pathSlice: "dashboard",
         type: "sub",
         badge: "badge badge-light-primary",
-        badgetxt: "3",
+        badgetxt: "4",
         children: [
+          {
+            path: "/dashboard/default",
+            title: "Dashboard",
+            type: "link",
+          },
           {
             path: "/dashboard/doctor-management",
             title: "Doctor Management",

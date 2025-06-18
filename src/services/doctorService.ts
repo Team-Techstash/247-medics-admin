@@ -3,70 +3,39 @@ import Cookies from 'js-cookie';
 import { API_URL } from '../config/api.config';
 
 export interface Doctor {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: {
-    streetAddress1: string;
-    city: string;
-    country: string;
-  };
-  role: string;
-  status: string;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  createdAt: string;
-  docProfile?: {
-    bio: string;
-    emergencyContact: {
-      fullName: string;
-      relation: string;
-      phone: string;
-      email: string;
-    };
-    regulatoryDetails: {
-      authorityName: string;
-      registrationNumber: string;
-      onSpecialistRegister: boolean;
-      allowStatusVerification: boolean;
-    };
-  };
-}
-export interface Doctor {
   data: {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: {
-    streetAddress1: string;
-    city: string;
-    country: string;
-  };
-  role: string;
-  status: string;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  createdAt: string;
-  docProfile?: {
-    bio: string;
-    emergencyContact: {
-      fullName: string;
-      relation: string;
-      phone: string;
-      email: string;
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    address: {
+      streetAddress1: string;
+      city: string;
+      country: string;
     };
-    regulatoryDetails: {
-      authorityName: string;
-      registrationNumber: string;
-      onSpecialistRegister: boolean;
-      allowStatusVerification: boolean;
+    role: string;
+    status: string;
+    emailVerified: boolean;
+    phoneVerified: boolean;
+    createdAt: string;
+    averageRating?: number;
+    docProfile?: {
+      bio: string;
+      emergencyContact: {
+        fullName: string;
+        relation: string;
+        phone: string;
+        email: string;
+      };
+      regulatoryDetails: {
+        authorityName: string;
+        registrationNumber: string;
+        onSpecialistRegister: boolean;
+        allowStatusVerification: boolean;
+      };
     };
-  }; 
-}
+  }
 }
 
 export interface PaginatedResponse<T> {
@@ -124,6 +93,29 @@ class DoctorService {
       return response.data;
     } catch (error) {
       console.error(`Error fetching doctor with id ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async updateAllowStatusVerification(id: string, allowStatusVerification: boolean, currentDoctorData: Doctor): Promise<Doctor> {
+    try {
+      const response = await axios.put(`${API_URL}/users/${id}`, {
+        docProfile: {
+          ...currentDoctorData.data.docProfile,
+          regulatoryDetails: {
+            ...currentDoctorData.data.docProfile?.regulatoryDetails,
+            allowStatusVerification
+          }
+        },
+        country: currentDoctorData.data.address?.country,
+        city: currentDoctorData.data.address?.city,
+        fcmToken: "fcmToken.From.Device" // This is required by the API
+      }, {
+        headers: this.getAuthHeader()
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating status verification for doctor ${id}:`, error);
       throw error;
     }
   }

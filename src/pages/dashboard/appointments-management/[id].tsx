@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
-import { Button, Card, CardBody, Col, Container, Row } from "reactstrap";
+import { Button, Card, CardBody, Col, Container, Row, Modal, ModalBody, ModalFooter, ModalHeader, FormGroup, Label } from "reactstrap";
 import Breadcrumbs from "CommonElements/Breadcrumbs";
 import { AppointmentManage, AppointmentManagementHeading } from "utils/Constant";
 import { useRouter } from "next/router";
 import { appointmentService, Appointment } from "../../../services/appointmentService";
 import Loader from "components/Loader";
+import { Edit2 } from "react-feather";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { toast } from "react-toastify";
 
 const AppointmentDetails = () => {
   const router = useRouter();
@@ -12,12 +16,23 @@ const AppointmentDetails = () => {
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditingDateTime, setIsEditingDateTime] = useState(false);
+  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null);
 
   useEffect(() => {
     if (id) {
       fetchAppointmentDetails();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (appointment) {
+      const startTime = appointment.scheduledAt || appointment.scheduledRange?.start;
+      if (startTime) {
+        setSelectedDateTime(new Date(startTime));
+      }
+    }
+  }, [appointment]);
 
   const fetchAppointmentDetails = async () => {
     try {
@@ -36,6 +51,34 @@ const AppointmentDetails = () => {
 
   const handleBackClick = () => {
     router.push('/dashboard/appointments-management');
+  };
+
+  const handleDateTimeUpdate = async () => {
+    if (!selectedDateTime || !appointment) return;
+
+    try {
+      const duration = appointment.durationMinutes > 0 ? appointment.durationMinutes : 30;
+      const endDateTime = new Date(selectedDateTime);
+      endDateTime.setMinutes(endDateTime.getMinutes() + duration);
+
+      const updatePayload = {
+        scheduledAt: selectedDateTime.toISOString(),
+      };
+
+      const updatedAppointment = await appointmentService.updateAppointment(appointment._id, updatePayload);
+
+      // Update the local state with the new appointment data
+      setAppointment(prev => prev ? {
+        ...prev,
+        ...updatePayload
+      } : null);
+      
+      setIsEditingDateTime(false);
+      toast.success('Appointment date/time updated successfully');
+    } catch (err) {
+      console.error('Error updating appointment date/time:', err);
+      toast.error('Failed to update appointment date/time');
+    }
   };
 
   if (loading) {
@@ -128,13 +171,20 @@ const AppointmentDetails = () => {
                 <Row>
                   <Col md={4}>
                     <div className="mb-3" style={{ transition: 'none' }}>
-                      <strong>Scheduled Range:</strong>{" "}
-                      {appointment.scheduledRange ? (
-                        <>
-                          <div>Start: {new Date(appointment.scheduledRange.start).toLocaleString()}</div>
-                          <div>End: {new Date(appointment.scheduledRange.end).toLocaleString()}</div>
-                        </>
-                      ) : 'Not specified'}
+                      <strong>Appointment Date/Time:</strong>{" "}
+                      <div className="d-flex align-items-center">
+                        {appointment.scheduledAt || appointment.scheduledRange?.start ? (
+                          <>
+                            <span>{new Date(appointment.scheduledAt || appointment.scheduledRange?.start).toLocaleString()}</span>
+                            <Edit2
+                              size={16}
+                              className="ms-2 cursor-pointer"
+                              onClick={() => setIsEditingDateTime(true)}
+                              style={{ cursor: 'pointer' }}
+                            />
+                          </>
+                        ) : 'Not specified'}
+                      </div>
                     </div>
                     <div className="mb-3" style={{ transition: 'none' }}>
                       <strong>Service Type:</strong> {appointment.serviceType}
@@ -305,6 +355,32 @@ const AppointmentDetails = () => {
           </Col>
         </Row>
       </Container>
+
+      <Modal isOpen={isEditingDateTime} toggle={() => setIsEditingDateTime(false)}>
+        <ModalHeader toggle={() => setIsEditingDateTime(false)}>
+          Edit Appointment Date/Time
+        </ModalHeader>
+        <ModalBody>
+          <FormGroup>
+            <Label>Select Date and Time</Label>
+            <DatePicker
+              selected={selectedDateTime}
+              onChange={(date: Date) => setSelectedDateTime(date)}
+              showTimeSelect
+              dateFormat="MMMM d, yyyy h:mm aa"
+              className="form-control"
+            />
+          </FormGroup>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={() => setIsEditingDateTime(false)}>
+            Cancel
+          </Button>
+          <Button color="primary" onClick={handleDateTimeUpdate}>
+            Save Changes
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 };

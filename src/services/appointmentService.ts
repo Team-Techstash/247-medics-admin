@@ -87,6 +87,7 @@ export interface Appointment {
   reason: string;
   recommendedDoctors: any[];
   respondedDoctors: any[];
+  scheduledAt?: string;
   scheduledRange: {
     start: string;
     end: string;
@@ -146,6 +147,17 @@ export const appointmentService = {
       return response.data.data;
     } catch (error) {
       console.error('Error in getAdminAppointmentById:', error);
+      throw error;
+    }
+  },
+
+  // Update appointment (POST, as per Postman collection)
+  updateAppointment: async (id: string, data: Partial<Appointment>) => {
+    try {
+      const response = await api.put<AppointmentResponse>(`/appointments/${id}`, data);
+      return response.data.data;
+    } catch (error) {
+      console.error('Error in updateAppointment:', error);
       throw error;
     }
   },

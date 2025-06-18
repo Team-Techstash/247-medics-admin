@@ -13,7 +13,7 @@ const Profile = () => {
                 <div className="cardheader" />
                 <div className="user-image">
                     <div className="avatar">
-                        <Image src={`${ImgPath}/user/7.jpg`} width={100} height={100} className='step1' data-intro="This is cuba profile" alt='profile' />
+                        <Image src={`/assets/images/user/7.jpg`} width={100} height={100} className='step1' data-intro="This is cuba profile" alt='profile' />
                     </div>
                     <div className="icon-wrapper">
                         <i onClick={() => router.push("/app/users/edit")} className="icofont icofont-pencil-alt-5 step2" data-intro="Change cuba profile image here" />

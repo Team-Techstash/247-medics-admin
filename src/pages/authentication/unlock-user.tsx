@@ -17,8 +17,8 @@ const UnlockUser = () => {
                 <div>
                   <div>
                     <Link className="logo" href="dashboard/default">
-                      <Image width={121} height={35} className="img-fluid for-light" src={`${ImgPath}/logo/logo.png`} alt="looginpage"/>
-                      <Image width={121} height={35} className="img-fluid for-dark" src={`${ImgPath}/logo/logo_dark.png`} alt="looginpage"/>
+                      <Image width={121} height={35} className="img-fluid for-light" src={`/assets/images/logo/logo.png`} alt="looginpage"/>
+                      <Image width={121} height={35} className="img-fluid for-dark" src={`/assets/images/logo/logo_dark.png`} alt="looginpage"/>
                     </Link>
                   </div>
                   <div className="login-main">

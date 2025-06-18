@@ -9,7 +9,7 @@ const CommonErrorPage = ({tittle,tittleClassName,BtnClassName,}: any) => {
     <div className="page-wrapper compact-wrapper" id="pageWrapper">
       <div className="error-wrapper">
         <Container>
-          <Image width={100} height={100} className="img-100" src={`${ImgPath}/other-images/sad.png`} alt="Error"/>
+          <Image width={100} height={100} className="img-100" src={`/assets/images/other-images/sad.png`} alt="Error"/>
           <div className="error-heading">
             <h2 className={`headline ${tittleClassName}`}>{tittle}</h2>
           </div>

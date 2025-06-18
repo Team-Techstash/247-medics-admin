@@ -23,7 +23,7 @@ const SideBarList = ({ level }: propsType) => {
         </li>
       ))}
       <li>
-        <Image width={400} height={300} className="img-fluid for-light" src={`${ImgPath}/login/icon.png`} alt="looginpage" />
+        <Image width={400} height={300} className="img-fluid for-light" src={`/assets/images/login/icon.png`} alt="looginpage" />
       </li>
     </ul>
   );

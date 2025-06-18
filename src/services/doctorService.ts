@@ -2,6 +2,39 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { API_URL } from '../config/api.config';
 
+
+export interface Doctor {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: {
+    streetAddress1: string;
+    city: string;
+    country: string;
+  };
+  role: string;
+  status: string;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  createdAt: string;
+  docProfile?: {
+    bio: string;
+    emergencyContact: {
+      fullName: string;
+      relation: string;
+      phone: string;
+      email: string;
+    };
+    regulatoryDetails: {
+      authorityName: string;
+      registrationNumber: string;
+      onSpecialistRegister: boolean;
+      allowStatusVerification: boolean;
+    };
+  };
+}
 export interface Doctor {
   data: {
     _id: string;

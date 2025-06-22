@@ -60,7 +60,17 @@ const DoctorDetails = () => {
       try {
         setLoadingReviews(true);
         const reviewsData = await reviewService.getReviewsByDoctorId(id);
-        setReviews(reviewsData || []);
+        // Ensure reviews is always an array
+        let reviewsArray: Review[] = [];
+        if (Array.isArray(reviewsData)) {
+          reviewsArray = reviewsData;
+        } else if (reviewsData && typeof reviewsData === 'object' && 'data' in reviewsData) {
+          const data = (reviewsData as any).data;
+          if (Array.isArray(data)) {
+            reviewsArray = data;
+          }
+        }
+        setReviews(reviewsArray);
         setShowReviews(true);
       } catch (err: any) {
         setBannerError(err.response?.data?.message || "Failed to fetch reviews");

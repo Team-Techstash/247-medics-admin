@@ -21,6 +21,7 @@ export interface Doctor {
   createdAt: string;
   docProfile?: {
     bio: string;
+    isProfileVerified?: boolean;
     emergencyContact: {
       fullName: string;
       relation: string;
@@ -55,6 +56,7 @@ export interface Doctor {
     averageRating?: number;
     docProfile?: {
       bio: string;
+      isProfileVerified?: boolean;
       emergencyContact: {
         fullName: string;
         relation: string;
@@ -149,6 +151,26 @@ class DoctorService {
       return response.data;
     } catch (error) {
       console.error(`Error updating status verification for doctor ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async updateProfileVerification(id: string, isProfileVerified: boolean, currentDoctorData: Doctor): Promise<Doctor> {
+    try {
+      const response = await axios.put(`${API_URL}/users/${id}`, {
+        docProfile: {
+          ...currentDoctorData.data.docProfile,
+          isProfileVerified
+        },
+        country: currentDoctorData.data.address?.country,
+        city: currentDoctorData.data.address?.city,
+        fcmToken: "fcmToken.From.Device" // This is required by the API
+      }, {
+        headers: this.getAuthHeader()
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating profile verification for doctor ${id}:`, error);
       throw error;
     }
   }

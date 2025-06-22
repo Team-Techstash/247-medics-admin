@@ -22,7 +22,7 @@ const DoctorDetails = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [bannerError, setBannerError] = useState<string | null>(null);
-  const [allowStatusVerification, setAllowStatusVerification] = useState<boolean | undefined>(doctorData?.data.docProfile?.regulatoryDetails.allowStatusVerification);
+  const [isProfileVerified, setIsProfileVerified] = useState<boolean | undefined>(doctorData?.data.docProfile?.isProfileVerified);
   const [showSaveVerification, setShowSaveVerification] = useState(false);
   const [savingVerification, setSavingVerification] = useState(false);
 
@@ -52,7 +52,7 @@ const DoctorDetails = () => {
   }, [id]);
 
   useEffect(() => {
-    setAllowStatusVerification(doctorData?.data.docProfile?.regulatoryDetails.allowStatusVerification);
+    setIsProfileVerified(doctorData?.data.docProfile?.isProfileVerified);
   }, [doctorData]);
 
   const handleShowReviews = async () => {
@@ -60,7 +60,7 @@ const DoctorDetails = () => {
       try {
         setLoadingReviews(true);
         const reviewsData = await reviewService.getReviewsByDoctorId(id);
-        setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+        setReviews(reviewsData || []);
         setShowReviews(true);
       } catch (err: any) {
         setBannerError(err.response?.data?.message || "Failed to fetch reviews");
@@ -72,7 +72,7 @@ const DoctorDetails = () => {
   };
 
   const handleToggleVerification = () => {
-    setAllowStatusVerification((prev) => !prev);
+    setIsProfileVerified((prev) => !prev);
     setShowSaveVerification(true);
   };
 
@@ -80,11 +80,11 @@ const DoctorDetails = () => {
     if (!doctorData) return;
     setSavingVerification(true);
     try {
-      await doctorService.updateAllowStatusVerification(doctorData.data._id, !!allowStatusVerification, doctorData);
+      await doctorService.updateProfileVerification(doctorData.data._id, !!isProfileVerified, doctorData);
       setShowSaveVerification(false);
       setBannerError(null);
     } catch (err: any) {
-      setBannerError(err.response?.data?.message || "Failed to update status verification");
+      setBannerError(err.response?.data?.message || "Failed to update profile verification");
     } finally {
       setSavingVerification(false);
     }
@@ -317,28 +317,31 @@ const DoctorDetails = () => {
                       <p>{doctorData?.data.docProfile?.regulatoryDetails?.authorityName}</p>
                     </div>
                     <div className="mb-3">
+                      <label className="form-label fw-bold">Allow Status Verification:</label>
+                      <p>
+                        {doctorData?.data.docProfile?.regulatoryDetails?.allowStatusVerification ? 'Yes' : 'No'}
+                        <span className="ms-2 text-muted">
+                          ({isProfileVerified ? 'Verified' : 'Unverified'})
+                        </span>
+                      </p>
+                    </div>
+                  </Col>
+                  <Col md={4}>
+                  <div className="mb-3">
                       <label className="form-label fw-bold">Registration Number:</label>
                       <p>{doctorData?.data.docProfile?.regulatoryDetails?.registrationNumber}</p>
                     </div>
-                  </Col>
-                  <Col md={4}>
                     <div className="mb-3">
-                      <label className="form-label fw-bold">On Specialist Register:</label>
-                      <p>{doctorData?.data.docProfile?.regulatoryDetails?.onSpecialistRegister ? 'Yes' : 'No'}</p>
-                    </div>
-                  </Col>
-                  <Col md={4}>
-                    <div className="mb-3">
-                      <label className="form-label fw-bold">Allow Status Verification:</label>
+                      <label className="form-label fw-bold">Profile Verification:</label>
                       <div className="d-flex align-items-center">
                         <FormGroup switch className="mb-0">
                           <Input
                             type="switch"
-                            checked={!!allowStatusVerification}
+                            checked={!!isProfileVerified}
                             onChange={handleToggleVerification}
                             disabled={savingVerification}
                           />
-                          <Label switch>{allowStatusVerification ? 'Yes' : 'No'}</Label>
+                          <Label switch>{isProfileVerified ? 'Verified' : 'Unverified'}</Label>
                         </FormGroup>
                         {showSaveVerification && (
                           <Button
@@ -352,6 +355,13 @@ const DoctorDetails = () => {
                           </Button>
                         )}
                       </div>
+                    </div>
+                    
+                  </Col>
+                  <Col md={4}>
+                  <div className="mb-3">
+                      <label className="form-label fw-bold">On Specialist Register:</label>
+                      <p>{doctorData?.data.docProfile?.regulatoryDetails?.onSpecialistRegister ? 'Yes' : 'No'}</p>
                     </div>
                   </Col>
                 </Row>

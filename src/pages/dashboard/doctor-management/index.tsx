@@ -7,8 +7,6 @@ import { useRouter } from "next/router";
 import { doctorService } from "@/services/doctorService";
 import type { Doctor, PaginatedResponse } from "@/services/doctorService";
 import { useUser } from "@/context/UserContext";
-import { FiInfo } from "react-icons/fi";
-import { Info } from "react-feather";
 import { ProgressComponent } from "components/Loader";
 
 const DoctorManagement = () => {
@@ -205,6 +203,31 @@ const DoctorManagement = () => {
   // Table columns configuration
   const columns = [
     {
+      name: "Doctor ID",
+      selector: (row: Doctor) => row.readableId || row._id,
+      sortable: true,
+      width: "150px",
+      cell: (row: Doctor) => (
+        <div>
+          <span 
+            id={`readableId-${row._id}`}
+            className="text-primary cursor-pointer"
+            onClick={() => router.push(`/dashboard/doctor-management/${row._id}`)}
+          >
+            {row.readableId || row._id}
+          </span>
+          <Tooltip
+            placement="top"
+            isOpen={tooltipOpen[`readableId-${row._id}`]}
+            target={`readableId-${row._id}`}
+            toggle={() => toggleTooltip(`readableId-${row._id}`)}
+          >
+            Click to view doctor details
+          </Tooltip>
+        </div>
+      ),
+    },
+    {
       name: "Name",
       selector: (row: Doctor) => `${row.firstName} ${row.lastName}`,
       sortable: true,
@@ -285,29 +308,6 @@ const DoctorManagement = () => {
           </div>
         );
       },
-    },
-    {
-      name: "Actions",
-      width: "205px",
-      cell: (row: Doctor) => (
-        <div className="d-flex justify-content-center">
-          <span
-            id={`view-${row._id}`}
-            style={{ cursor: 'pointer', fontSize: '20px', display: 'flex', alignItems: 'center' }}
-            onClick={() => router.push(`/dashboard/doctor-management/${row._id}`)}
-          >
-            <FiInfo size={18} className="text-primary" />
-          </span>
-          <Tooltip
-            placement="top"
-            isOpen={tooltipOpen[`view-${row._id}`]}
-            target={`view-${row._id}`}
-            toggle={() => toggleTooltip(`view-${row._id}`)}
-          >
-            View doctor details
-          </Tooltip>
-        </div>
-      ),
     }
   ];
 

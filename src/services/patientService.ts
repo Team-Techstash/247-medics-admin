@@ -5,6 +5,7 @@ import { API_URL } from '../config/api.config';
 export interface Patient {
   data:{
   _id: string;
+  readableId?: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -25,6 +26,7 @@ export interface Patient {
 
 export interface Patient {
   _id: string;
+  readableId?: string;
   firstName: string;
   lastName: string;
   email: string;

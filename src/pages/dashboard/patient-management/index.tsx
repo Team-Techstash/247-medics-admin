@@ -5,7 +5,6 @@ import DataTable from "react-data-table-component";
 import { PatientManage, PatientManagementHeading } from "utils/Constant";
 import { useRouter } from "next/router";
 import { patientService, Patient, PaginatedResponse } from "../../../services/patientService";
-import { Info } from "react-feather";
 import { ProgressComponent } from "components/Loader";
 
 const PatientManagement = () => {
@@ -67,6 +66,31 @@ const PatientManagement = () => {
 
   // Table columns configuration
   const columns = [
+    {
+      name: "Patient ID",
+      selector: (row: Patient) => row.readableId || row._id,
+      sortable: true,
+      width: "150px",
+      cell: (row: Patient) => (
+        <div>
+          <span 
+            id={`readableId-${row._id}`}
+            className="text-primary cursor-pointer"
+            onClick={() => router.push(`/dashboard/patient-management/${row._id}`)}
+          >
+            {row.readableId || row._id}
+          </span>
+          <Tooltip
+            placement="top"
+            isOpen={tooltipOpen[`readableId-${row._id}`]}
+            target={`readableId-${row._id}`}
+            toggle={() => toggleTooltip(`readableId-${row._id}`)}
+          >
+            Click to view patient details
+          </Tooltip>
+        </div>
+      ),
+    },
     {
       name: "Name",
       selector: (row: Patient) => `${row.firstName || ''} ${row.lastName || ''}`.trim(),
@@ -160,25 +184,6 @@ const PatientManagement = () => {
           </div>
         );
       },
-    },
-    {
-      name: "Actions",
-      width: "205px",
-      cell: (row: Patient) => (
-        <div className="d-flex align-items-center">
-          <span id={`info-${row._id}`} className="cursor-pointer" onClick={() => router.push(`/dashboard/patient-management/${row._id}`)}>
-            <Info size={18} className="text-primary" />
-          </span>
-          <Tooltip
-            placement="top"
-            isOpen={tooltipOpen[`info-${row._id}`]}
-            target={`info-${row._id}`}
-            toggle={() => toggleTooltip(`info-${row._id}`)}
-          >
-            View Patient Details
-          </Tooltip>
-        </div>
-      ),
     }
   ];
 

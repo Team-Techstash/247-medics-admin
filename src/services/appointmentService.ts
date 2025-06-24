@@ -23,6 +23,7 @@ export interface AppointmentResponse {
   success: boolean;
   data: {
     _id: string;
+    readableId?: string;
     appointmentMode: string;
     attended: boolean;
     createdAt: string;
@@ -54,6 +55,7 @@ export interface AppointmentResponse {
 
 export interface Appointment {
   _id: string;
+  readableId?: string;
   appointmentMode: string;
   attended: boolean;
   createdAt: string;

@@ -15,41 +15,9 @@ import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { addDays, subDays, format, parse } from 'date-fns';
+import { adminService, DashboardStats } from '../../services/adminService';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
-
-// Mock summary data
-const summaryData = [
-  { label: 'Sessions', value: 3985, change: '+5%' },
-  { label: 'Total sales', value: '$11,585.29', change: '+0.5%' },
-  { label: 'Orders', value: 102, change: '+4%' },
-  { label: 'Conversion rate', value: '2.21%', change: '+8%' },
-];
-
-// Mock chart data
-const chartData = {
-  labels: [
-    'May 12', 'May 15', 'May 18', 'May 21', 'May 24', 'May 27', 'May 30', 'Jun 2', 'Jun 5', 'Jun 8'
-  ],
-  datasets: [
-    {
-      label: 'Sessions',
-      data: [150, 130, 140, 145, 160, 200, 170, 220, 180, 120],
-      borderColor: 'rgb(75, 192, 192)',
-      backgroundColor: 'rgba(75, 192, 192, 0.2)',
-      tension: 0.4,
-      fill: true,
-    },
-  ],
-};
-
-const chartOptions = {
-  responsive: true,
-  plugins: {
-    legend: { position: 'top' as const },
-  },
-  maintainAspectRatio: false,
-};
 
 // Mock appointments data
 const mockAppointments = [
@@ -103,55 +71,67 @@ const statusColors: Record<string, string> = {
 };
 
 const quickRanges = [
-  { label: 'Yesterday', range: () => {
+  {
+    label: 'Today',
+    range: () => {
+      const today = new Date();
+      return { startDate: today, endDate: today };
+    },
+    timeFilter: 'today',
+  },
+  {
+    label: 'Yesterday',
+    range: () => {
       const yesterday = subDays(new Date(), 1);
       return { startDate: yesterday, endDate: yesterday };
-    }
+    },
+    timeFilter: 'yesterday',
   },
-  { label: 'Last 7 days', range: () => ({
-      startDate: subDays(new Date(), 6),
-      endDate: new Date(),
-    })
+  {
+    label: 'This Week',
+    range: () => {
+      const now = new Date();
+      const firstDayOfWeek = new Date(now);
+      firstDayOfWeek.setDate(now.getDate() - now.getDay()); // Sunday as first day
+      return { startDate: firstDayOfWeek, endDate: now };
+    },
+    timeFilter: 'thisWeek',
   },
-  { label: 'Last 30 days', range: () => ({
-      startDate: subDays(new Date(), 29),
-      endDate: new Date(),
-    })
+  {
+    label: 'This Month',
+    range: () => {
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      return { startDate: firstDayOfMonth, endDate: now };
+    },
+    timeFilter: 'thisMonth',
   },
-  { label: 'Last 90 days', range: () => ({
-      startDate: subDays(new Date(), 89),
-      endDate: new Date(),
-    })
-  },
-  { label: 'Last 365 days', range: () => ({
-      startDate: subDays(new Date(), 364),
-      endDate: new Date(),
-    })
-  },
-  { label: 'Last Month', range: () => {
+  {
+    label: 'Last Month',
+    range: () => {
       const now = new Date();
       const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
       return { startDate: firstDayLastMonth, endDate: lastDayLastMonth };
-    }
-  },
-  { label: 'Last 12 months', range: () => ({
-      startDate: subDays(new Date(), 364),
-      endDate: new Date(),
-    })
-  },
-  { label: 'Last Year', range: () => {
-      const now = new Date();
-      const firstDayLastYear = new Date(now.getFullYear() - 1, 0, 1);
-      const lastDayLastYear = new Date(now.getFullYear() - 1, 11, 31);
-      return { startDate: firstDayLastYear, endDate: lastDayLastYear };
-    }
+    },
+    timeFilter: 'lastMonth',
   },
 ];
+
+const chartOptions = {
+  responsive: true,
+  plugins: {
+    legend: { position: 'top' as const },
+  },
+  maintainAspectRatio: false,
+};
 
 const Dashboard = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [appointments, setAppointments] = useState(mockAppointments);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Date range picker state
   const [dateRange, setDateRange] = useState([
@@ -163,36 +143,80 @@ const Dashboard = () => {
   ]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [quickDropdownOpen, setQuickDropdownOpen] = useState(false);
+  const [timeFilter, setTimeFilter] = useState('custom');
 
-  const handleQuickRange = (rangeFn: () => { startDate: Date, endDate: Date }) => {
-    setDateRange([{ ...rangeFn(), key: 'selection' }]);
-    setQuickDropdownOpen(false);
+  // Fetch dashboard stats from API
+  const fetchDashboardStats = async (startDate: Date, endDate: Date, filter: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const startDateStr = format(startDate, 'yyyy-MM-dd');
+      const endDateStr = format(endDate, 'yyyy-MM-dd');
+      const data = await adminService.getDashboardStats(startDateStr, endDateStr, filter);
+      setDashboardStats(data);
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch dashboard data');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Filter chart data based on date range
-  const { startDate, endDate } = dateRange[0];
-  // Helper to parse label to date (assumes year 2025 for mock data)
-  const parseLabelToDate = (label: string) => parse(label + ', 2025', 'MMM d, yyyy', new Date());
-  // Find indices for slicing data
-  const startIdx = chartData.labels.findIndex(label => parseLabelToDate(label) >= startDate);
-  const endIdx = chartData.labels.findIndex(label => parseLabelToDate(label) > endDate);
-  const filteredLabels = chartData.labels.slice(
-    startIdx === -1 ? 0 : startIdx,
-    endIdx === -1 ? chartData.labels.length : endIdx
-  );
-  const filteredData = chartData.datasets[0].data.slice(
-    startIdx === -1 ? 0 : startIdx,
-    endIdx === -1 ? chartData.labels.length : endIdx
-  );
-  const filteredChartData = {
-    ...chartData,
-    labels: filteredLabels,
-    datasets: [
-      {
-        ...chartData.datasets[0],
-        data: filteredData,
-      },
-    ],
+  // Initial data fetch
+  useEffect(() => {
+    const { startDate, endDate } = dateRange[0];
+    fetchDashboardStats(startDate, endDate, timeFilter);
+  }, []);
+
+  const handleQuickRange = (rangeFn: () => { startDate: Date, endDate: Date }, filter: string) => {
+    const newRange = rangeFn();
+    setDateRange([{ ...newRange, key: 'selection' }]);
+    setTimeFilter(filter);
+    setQuickDropdownOpen(false);
+    
+    // Fetch new data with the selected range
+    fetchDashboardStats(newRange.startDate, newRange.endDate, filter);
+  };
+
+  const handleDateRangeChange = (item: any) => {
+    setDateRange([item.selection]);
+    setTimeFilter('custom');
+    
+    // Fetch new data with the custom range
+    const { startDate, endDate } = item.selection;
+    fetchDashboardStats(startDate, endDate, 'custom');
+  };
+
+  // Prepare chart data from API response
+  const getChartData = () => {
+    if (!dashboardStats?.appointmentTrends) {
+      return {
+        labels: [],
+        datasets: [{
+          label: 'Appointments',
+          data: [],
+          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          tension: 0.4,
+          fill: true,
+        }],
+      };
+    }
+
+    const labels = dashboardStats.appointmentTrends.map((trend: { _id: string; count: number }) => trend._id);
+    const data = dashboardStats.appointmentTrends.map((trend: { _id: string; count: number }) => trend.count);
+
+    return {
+      labels,
+      datasets: [{
+        label: 'Appointments',
+        data,
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.4,
+        fill: true,
+      }],
+    };
   };
 
   // Filter appointments by payment status
@@ -200,26 +224,78 @@ const Dashboard = () => {
     ? appointments.filter((a) => a.paymentStatus === statusFilter)
     : appointments;
 
+  const { startDate, endDate } = dateRange[0];
+
   return (
     <div className="page-body">
       <div className="container-fluid">
         <h2 className="mb-4">Dashboard Overview</h2>
+        
+        {/* Loading and Error States */}
+        {loading && (
+          <div className="text-center mb-4">
+            <div className="spinner-border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        )}
+        
+        {error && (
+          <div className="alert alert-danger mb-4" role="alert">
+            {error}
+          </div>
+        )}
+
         {/* Summary Cards */}
-        <Row className="mb-4">
-          {summaryData.map((item) => (
-            <Col md={3} sm={6} xs={12} key={item.label}>
+        {dashboardStats && (
+          <Row className="mb-4">
+            <Col md={3} sm={6} xs={12}>
               <Card className="h-90">
                 <CardBody>
                   <div className="d-flex flex-column align-items-start">
-                    <span className="text-muted" style={{ fontSize: '1rem' }}>{item.label}</span>
-                    <span style={{ fontSize: '1.25rem', fontWeight: 600 }}>{item.value}</span>
-                    <span style={{ color: '#28a745', fontSize: '1rem' }}>{item.change}</span>
+                    <span className="text-muted" style={{ fontSize: '1rem' }}>Total Appointments</span>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 600 }}>{dashboardStats.totalAppointments}</span>
+                    <span style={{ color: '#28a745', fontSize: '1rem' }}>+5%</span>
                   </div>
                 </CardBody>
               </Card>
             </Col>
-          ))}
-        </Row>
+            <Col md={3} sm={6} xs={12}>
+              <Card className="h-90">
+                <CardBody>
+                  <div className="d-flex flex-column align-items-start">
+                    <span className="text-muted" style={{ fontSize: '1rem' }}>Net Revenue</span>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 600 }}>${dashboardStats.netRevenue}</span>
+                    <span style={{ color: '#28a745', fontSize: '1rem' }}>+0.5%</span>
+                  </div>
+                </CardBody>
+              </Card>
+            </Col>
+            <Col md={3} sm={6} xs={12}>
+              <Card className="h-90">
+                <CardBody>
+                  <div className="d-flex flex-column align-items-start">
+                    <span className="text-muted" style={{ fontSize: '1rem' }}>Profit</span>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 600 }}>${dashboardStats.profit}</span>
+                    <span style={{ color: '#28a745', fontSize: '1rem' }}>+4%</span>
+                  </div>
+                </CardBody>
+              </Card>
+            </Col>
+            <Col md={3} sm={6} xs={12}>
+              <Card className="h-90">
+                <CardBody>
+                  <div className="d-flex flex-column align-items-start">
+                    <span className="text-muted" style={{ fontSize: '1rem' }}>Doctors Onboarded</span>
+                    <span style={{ fontSize: '1.25rem', fontWeight: 600 }}>{dashboardStats.doctorOnBoarded}</span>
+                    <span style={{ color: '#28a745', fontSize: '1rem' }}>+2%</span>
+                  </div>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        )}
+
         {/* Date Range Picker */}
         <div className="mb-3" style={{ position: 'relative', zIndex: 10 }}>
           <Button onClick={() => setShowDatePicker(!showDatePicker)}>
@@ -229,17 +305,19 @@ const Dashboard = () => {
             <div
               style={{
                 position: 'absolute',
+                top: 48,
+                left: 0,
                 zIndex: 100,
                 background: '#fff',
                 borderRadius: 12,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.15), 0 8px 32px rgba(0,0,0,0.1)',
                 padding: 20,
                 minWidth: 340,
-                marginTop: 8,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'stretch',
                 gap: 12,
+                border: '1px solid rgba(0,0,0,0.08)',
               }}
             >
               {/* Quick selection dropdown */}
@@ -249,7 +327,7 @@ const Dashboard = () => {
                 </DropdownToggle>
                 <DropdownMenu style={{ width: '100%' }}>
                   {quickRanges.map((q) => (
-                    <DropdownItem key={q.label} onClick={() => handleQuickRange(q.range)}>
+                    <DropdownItem key={q.label} onClick={() => handleQuickRange(q.range, q.timeFilter)}>
                       {q.label}
                     </DropdownItem>
                   ))}
@@ -257,7 +335,7 @@ const Dashboard = () => {
               </Dropdown>
               <DateRange
                 editableDateInputs={true}
-                onChange={(item: any) => setDateRange([item.selection])}
+                onChange={handleDateRangeChange}
                 moveRangeOnFirstSelection={false}
                 ranges={dateRange}
                 maxDate={new Date()}
@@ -267,17 +345,27 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+
         {/* Line Chart */}
         <Card className="mb-4">
           <CardBody>
-            <h5 className="card-title">Sessions Trend</h5>
+            <h5 className="card-title">Appointments Trend</h5>
             <div style={{ height: '300px' }}>
-              <Line data={filteredChartData} options={chartOptions} />
+              {loading ? (
+                <div className="d-flex justify-content-center align-items-center h-100">
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : (
+                <Line data={getChartData()} options={chartOptions} />
+              )}
             </div>
           </CardBody>
         </Card>
+
         {/* Appointments Table */}
-        <Card>
+        {/* <Card>
           <CardBody>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="card-title mb-0">Appointments</h5>
@@ -329,7 +417,7 @@ const Dashboard = () => {
               </Table>
             </div>
           </CardBody>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );

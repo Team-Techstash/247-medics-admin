@@ -24,7 +24,7 @@ const Profile = () => {
   return (
     <li className="profile-nav onhover-dropdown pe-0 py-0">
       <div className="media profile-media">
-        <Image className="b-r-10" src="/assets/images/dashboard/profile.png" alt="" width={35} height={35}/>
+        {/* <Image className="b-r-10" src="/assets/images/dashboard/profile.png" alt="" width={35} height={35}/> */}
         <div className="media-body">
           <span>{fullName}</span>
           <p className="mb-0 font-roboto">

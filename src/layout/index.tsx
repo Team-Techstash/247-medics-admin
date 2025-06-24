@@ -100,6 +100,7 @@ const Layout = ({ children }: layoutProps) => {
       <div
         className={`page-wrapper ${sideBarToggle ? "compact-wrapper" : layout}`}
       >
+        <Header />
         <div className="page-body-wrapper">
           <Sidebar />
           {children}

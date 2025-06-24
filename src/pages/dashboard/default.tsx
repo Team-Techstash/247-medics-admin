@@ -16,6 +16,8 @@ import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import { addDays, subDays, format, parse } from 'date-fns';
 import { adminService, DashboardStats } from '../../services/adminService';
+import { useUser } from '@/context/UserContext';
+import { useRouter } from 'next/router';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -127,6 +129,15 @@ const chartOptions = {
 };
 
 const Dashboard = () => {
+  const { user } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user) {
+      router.replace('/authentication/login');
+    }
+  }, [user, router]);
+
   const [statusFilter, setStatusFilter] = useState('');
   const [appointments, setAppointments] = useState(mockAppointments);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);

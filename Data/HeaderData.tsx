@@ -54,9 +54,9 @@ export const LanguageData: languageDatatype[] = [
 ]
 
 export const profileListData: profileType[] = [
-    {
-        icon: 'User',
-        text: 'Account',
-        path: '/app/users/profile'
-    },
+    // {
+    //     icon: 'User',
+    //     text: 'Account',
+    //     path: '/app/users/profile'
+    // },
 ]
